@@ -6,6 +6,13 @@ These are my personal collection of emacs modes and modules I have written with 
 
 | File             | Module        | Short Description                                    |
 |------------------+---------------+------------------------------------------------------|
-| mtl-edit-mode.el | MTL edit mode | A minor mode for editing Machine translated outputs. |
+| mtl-edit.el      | MTL edit mode | A minor mode for editing Machine translated outputs. |
 
+* Long Description
+
+** MTL-Edit mode
+
+Here is a demo video, (please forgive me for tying to type without disabling the mtl-mode).
+
+[https://youtu.be/DJUTfHWyfew]
 
