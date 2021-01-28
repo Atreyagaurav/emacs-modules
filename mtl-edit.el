@@ -2,7 +2,8 @@
 
 ;; Copyright (C) 2021  
 
-;; Author:  <allmanpride@gmail.com>
+;; Author: Gaurav Atreya <allmanpride@gmail.com>
+;; Version: 0.1
 ;; Keywords: docs, extensions
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 ;; 
 
 ;;; Code:
+(require 'help-macro)
 
 (setq pronouns (list
 		'("she" "her" "her" "herself")
@@ -74,27 +76,33 @@
 	  (insert subs))))))
 
 (defun pronoun-next-vt ()
+  "Change pronoun to next vertically."
   (interactive)
   (pronoun-substitute #'pronoun-change-vertical 1))
 
 (defun pronoun-next-hz ()
+  "Change pronoun to next horizontally."
   (interactive)
   (pronoun-substitute #'pronoun-change-horizontal 1))
 
 (defun pronoun-prev-vt ()
+  "Change pronoun to previous vertically."
   (interactive)
   (pronoun-substitute #'pronoun-change-vertical -1))
 
 (defun pronoun-prev-hz ()
+  "Change pronoun to previous horizontally."
   (interactive)
   (pronoun-substitute #'pronoun-change-horizontal -1))
 
 (defun seperate-lines ()
+  "Remove extra nextline characters."
   (interactive)
   (while (re-search-forward "\n+" nil t)
     (replace-match "\n\n" nil nil )))
 
 (defun mtl-add-chara-name ()
+  "Add the character name to the local list."
   (interactive)
   (let* ((bounds (if (use-region-p)
                      (cons (region-beginning) (region-end))
@@ -104,13 +112,21 @@
 	(setq mtl-chara-names (cons name mtl-chara-names)))))
 
 (defun mtl-insert-chara-name (name end)
+  "Insert character's name from the list."
   (interactive (list (ido-completing-read "Select Character: " mtl-chara-names)
 		     (read-string "End>" ": ")))
   (insert (concat (capitalize name) end)))
 
 (defun mtl-insert-honorifics (hon)
+  "Insert honorifics (sama, kun, san, etc) in point."
   (interactive (list (ido-completing-read "Honorific: " mtl-honorifics)))
   (insert (concat "-" hon)))
+
+(defun mtl-save-buffer ()
+  "Saves the buffer. See save-buffer for more."
+  (interactive)
+  (save-buffer)
+  )
 
 
 (define-minor-mode mtl-edit-mode
@@ -121,11 +137,24 @@
 	    (,(kbd "h") . pronoun-prev-hz)
 	    (,(kbd "j") . pronoun-prev-vt)
 	    (,(kbd ";") . seperate-lines)
-	    (,(kbd "s") . save-buffer)
+	    (,(kbd "s") . mtl-save-buffer)
 	    (,(kbd "a") . mtl-add-chara-name)
 	    (,(kbd "i") . mtl-insert-chara-name)
 	    (,(kbd "-") . mtl-insert-honorifics)
-	    ))
+	    (,(kbd "?") . mtl-edit-help)
+	    )
+  )
+
+
+(defun mtl-edit-help ()
+  (interactive)
+  (with-temp-buffer
+    (map-keymap (lambda (kb f)
+		  (princ (key-description (where-is-internal f mtl-edit-mode-map t)))
+		  (princ "  -> ")(princ f)
+		  (princ "\t(")
+		  (princ (documentation f))
+		  (princ ")\n")) mtl-edit-mode-map)))
 
 
 (provide 'mtl-edit-mode)
