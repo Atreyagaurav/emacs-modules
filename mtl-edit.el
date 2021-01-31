@@ -38,6 +38,13 @@
 (setq mtl-chara-names (list "???"))
 (setq mtl-honorifics (list "kun" "sama" "san" "chan" "dono"))
 
+
+(setq mtl-pronouns-regex
+      (concat "\\<\\(" (mapconcat 'identity
+		 (mapcar #'(lambda (list)
+			     (concat "\\(" (mapconcat 'identity list "\\)\\|\\(") "\\)"))
+			 pronouns) "\\|") "\\)\\>"))
+
 (defun pronoun-change-horizontal (word &optional step)
   (let* ((g (find-if #'(lambda (list)
 			 (member word list))
@@ -114,7 +121,7 @@
 (defun mtl-insert-chara-name (name end)
   "Insert character's name from the list."
   (interactive (list (ido-completing-read "Select Character: " mtl-chara-names)
-		     (read-string "End>" ": ")))
+		     (ido-completing-read "End>" '(": " " " "'s"))))
   (insert (concat (capitalize name) end)))
 
 (defun mtl-insert-honorifics (hon)
@@ -122,12 +129,22 @@
   (interactive (list (ido-completing-read "Honorific: " mtl-honorifics)))
   (insert (concat "-" hon)))
 
+
+(defun mtl-goto-next-pronoun ()
+  "Move the cursor to the next pronoun in the text."
+  (interactive)
+  (re-search-forward mtl-pronouns-regex nil t 1))
+
+(defun mtl-goto-prev-pronoun ()
+  "Move the cursor to the previous pronoun in the text."
+  (interactive)
+  (re-search-backward mtl-pronouns-regex nil t 1))
+
 (defun mtl-save-buffer ()
   "Saves the buffer. See save-buffer for more."
   (interactive)
   (save-buffer)
   )
-
 
 (define-minor-mode mtl-edit-mode
   "Mode to edit MTLs without significant effort."
@@ -136,6 +153,8 @@
 	    (,(kbd "k") . pronoun-next-vt)
 	    (,(kbd "h") . pronoun-prev-hz)
 	    (,(kbd "j") . pronoun-prev-vt)
+	    (,(kbd "n") . mtl-goto-next-pronoun)
+	    (,(kbd "p") . mtl-goto-prev-pronoun)
 	    (,(kbd ";") . seperate-lines)
 	    (,(kbd "s") . mtl-save-buffer)
 	    (,(kbd "a") . mtl-add-chara-name)
@@ -144,7 +163,6 @@
 	    (,(kbd "?") . mtl-edit-help)
 	    )
   )
-
 
 (defun mtl-edit-help ()
   (interactive)
