@@ -40,10 +40,10 @@
 
 
 (setq mtl-pronouns-regex
-      (concat "\\<\\(" (mapconcat 'identity
+      (concat "\\b\\(" (mapconcat 'identity
 		 (mapcar #'(lambda (list)
 			     (concat "\\(" (mapconcat 'identity list "\\)\\|\\(") "\\)"))
-			 pronouns) "\\|") "\\)\\>"))
+			 pronouns) "\\|") "\\)\\b"))
 
 (defun pronoun-change-horizontal (word &optional step)
   (let* ((g (find-if #'(lambda (list)
@@ -71,13 +71,13 @@
 	(nth (position word group :test #'string-equal) next-group)))))
 
 
-(defun pronoun-substitute (change-func &optional step)
+(defun map-current-word (change-func &rest args)
   (let* ((bounds (if (use-region-p)
                      (cons (region-beginning) (region-end))
                    (bounds-of-thing-at-point 'symbol)))
          (text (downcase (buffer-substring-no-properties (car bounds) (cdr bounds)))))
     (when bounds
-      (let ((subs (funcall change-func text step)))
+      (let ((subs (apply change-func text args)))
 	(when subs
 	  (delete-region (car bounds) (cdr bounds))
 	  (insert subs))))))
@@ -85,22 +85,22 @@
 (defun pronoun-next-vt ()
   "Change pronoun to next vertically."
   (interactive)
-  (pronoun-substitute #'pronoun-change-vertical 1))
+  (map-current-word #'pronoun-change-vertical 1))
 
 (defun pronoun-next-hz ()
   "Change pronoun to next horizontally."
   (interactive)
-  (pronoun-substitute #'pronoun-change-horizontal 1))
+  (map-current-word #'pronoun-change-horizontal 1))
 
 (defun pronoun-prev-vt ()
   "Change pronoun to previous vertically."
   (interactive)
-  (pronoun-substitute #'pronoun-change-vertical -1))
+  (map-current-word #'pronoun-change-vertical -1))
 
 (defun pronoun-prev-hz ()
   "Change pronoun to previous horizontally."
   (interactive)
-  (pronoun-substitute #'pronoun-change-horizontal -1))
+  (map-current-word #'pronoun-change-horizontal -1))
 
 (defun seperate-lines ()
   "Remove extra nextline characters."
@@ -133,18 +133,35 @@
 (defun mtl-goto-next-pronoun ()
   "Move the cursor to the next pronoun in the text."
   (interactive)
-  (re-search-forward mtl-pronouns-regex nil t 1))
+  (re-search-forward mtl-pronouns-regex nil t 1)
+  ;; (backward-char 1)
+  )
 
 (defun mtl-goto-prev-pronoun ()
   "Move the cursor to the previous pronoun in the text."
   (interactive)
-  (re-search-backward mtl-pronouns-regex nil t 1))
-
-(defun mtl-save-buffer ()
-  "Saves the buffer. See save-buffer for more."
-  (interactive)
-  (save-buffer)
+  (re-search-backward mtl-pronouns-regex nil t 1)
+  ;; (forward-char 1)
   )
+
+;; (defun mtl-save-buffer ()
+;;   "Saves the buffer. See save-buffer for more."
+;;   (interactive)
+;;   (save-buffer)
+;;   )
+
+(defun mtl-upcase ()
+  (interactive)
+  (map-current-word #'upcase))
+
+(defun mtl-downcase ()
+  (interactive)
+  (map-current-word #'downcase))
+
+(defun mtl-capitalize ()
+  (interactive)
+  (map-current-word #'capitalize))
+
 
 (define-minor-mode mtl-edit-mode
   "Mode to edit MTLs without significant effort."
@@ -156,10 +173,13 @@
 	    (,(kbd "n") . mtl-goto-next-pronoun)
 	    (,(kbd "p") . mtl-goto-prev-pronoun)
 	    (,(kbd ";") . seperate-lines)
-	    (,(kbd "s") . mtl-save-buffer)
+	    (,(kbd "s") . save-buffer)
 	    (,(kbd "a") . mtl-add-chara-name)
 	    (,(kbd "i") . mtl-insert-chara-name)
 	    (,(kbd "-") . mtl-insert-honorifics)
+	    (,(kbd "c") . mtl-capitalize)
+	    (,(kbd "u") . mtl-upcase)
+	    (,(kbd "d") . mtl-downcase)
 	    (,(kbd "?") . mtl-edit-help)
 	    )
   )
@@ -169,10 +189,11 @@
   (with-temp-buffer
     (map-keymap (lambda (kb f)
 		  (princ (key-description (where-is-internal f mtl-edit-mode-map t)))
-		  (princ "  -> ")(princ f)
-		  (princ "\t(")
-		  (princ (documentation f))
-		  (princ ")\n")) mtl-edit-mode-map)))
+		  (princ "  -> ")(princ f)(princ "\n")
+		  ;; (princ "\t(")
+		  ;; (princ (documentation f))
+		  ;; (princ ")\n")
+		  ) mtl-edit-mode-map)))
 
 
 (provide 'mtl-edit-mode)
