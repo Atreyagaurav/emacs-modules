@@ -82,25 +82,7 @@
 	  (delete-region (car bounds) (cdr bounds))
 	  (insert subs))))))
 
-(defun pronoun-next-vt ()
-  "Change pronoun to next vertically."
-  (interactive)
-  (map-current-word #'pronoun-change-vertical 1))
-
-(defun pronoun-next-hz ()
-  "Change pronoun to next horizontally."
-  (interactive)
-  (map-current-word #'pronoun-change-horizontal 1))
-
-(defun pronoun-prev-vt ()
-  "Change pronoun to previous vertically."
-  (interactive)
-  (map-current-word #'pronoun-change-vertical -1))
-
-(defun pronoun-prev-hz ()
-  "Change pronoun to previous horizontally."
-  (interactive)
-  (map-current-word #'pronoun-change-horizontal -1))
+;; INTERACTIVE functions from here onwards
 
 (defun seperate-lines ()
   "Remove extra nextline characters."
@@ -108,21 +90,33 @@
   (while (re-search-forward "\n+" nil t)
     (replace-match "\n\n" nil nil )))
 
-(defun mtl-add-chara-name ()
+
+(defun mtl-add-chara-name (name)
   "Add the character name to the local list."
-  (interactive)
-  (let* ((bounds (if (use-region-p)
-                     (cons (region-beginning) (region-end))
-                   (bounds-of-thing-at-point 'symbol)))
-         (name (downcase (buffer-substring-no-properties (car bounds) (cdr bounds)))))
+  (interactive (list
+		    (let* ((bounds
+			    (if (use-region-p)
+				(cons (region-beginning) (region-end))
+			      (bounds-of-thing-at-point 'symbol))))
+		      (downcase (buffer-substring-no-properties
+				 (car bounds) (cdr bounds))))))
     (if (= (length (member name mtl-chara-names)) 0)
-	(setq mtl-chara-names (cons name mtl-chara-names)))))
+	(message "Characters: %s" (setq mtl-chara-names (cons name mtl-chara-names)))))
+
 
 (defun mtl-insert-chara-name (name end)
   "Insert character's name from the list."
-  (interactive (list (ido-completing-read "Select Character: " mtl-chara-names)
-		     (ido-completing-read "End>" '(": " " " "'s"))))
+  (interactive (list (ido-completing-read "Insert Character: " mtl-chara-names)
+		     (ido-completing-read "End>" '("" ": " " " "'s"))))
+  (mtl-add-chara-name name)
   (insert (concat (capitalize name) end)))
+
+
+(defun mtl-remove-chara-name (name)
+  "Remove character's name from the list."
+  (interactive (list (ido-completing-read "Select Character: " mtl-chara-names)))
+  (message "Characters: %s" (setq mtl-chara-names (remove name mtl-chara-names))))
+
 
 (defun mtl-insert-honorifics (hon)
   "Insert honorifics (sama, kun, san, etc) in point."
@@ -144,21 +138,42 @@
   ;; (forward-char 1)
   )
 
-;; (defun mtl-save-buffer ()
-;;   "Saves the buffer. See save-buffer for more."
-;;   (interactive)
-;;   (save-buffer)
-;;   )
+(defun mtl-insert-text (text)
+  (interactive "sEnter Text:")
+  (insert text))
+
+(defun pronoun-next-vt ()
+  "Change pronoun to next vertically."
+  (interactive)
+  (map-current-word #'pronoun-change-vertical 1))
+
+(defun pronoun-next-hz ()
+  "Change pronoun to next horizontally."
+  (interactive)
+  (map-current-word #'pronoun-change-horizontal 1))
+
+(defun pronoun-prev-vt ()
+  "Change pronoun to previous vertically."
+  (interactive)
+  (map-current-word #'pronoun-change-vertical -1))
+
+(defun pronoun-prev-hz ()
+  "Change pronoun to previous horizontally."
+  (interactive)
+  (map-current-word #'pronoun-change-horizontal -1))
 
 (defun mtl-upcase ()
+  "upcase current word."
   (interactive)
   (map-current-word #'upcase))
 
 (defun mtl-downcase ()
+  "downcase current word."
   (interactive)
   (map-current-word #'downcase))
 
 (defun mtl-capitalize ()
+  "capitalize current word."
   (interactive)
   (map-current-word #'capitalize))
 
@@ -180,6 +195,8 @@
 	    (,(kbd "c") . mtl-capitalize)
 	    (,(kbd "u") . mtl-upcase)
 	    (,(kbd "d") . mtl-downcase)
+	    (,(kbd "r") . mtl-remove-chara-name)
+	    (,(kbd "t") . mtl-insert-text)
 	    (,(kbd "?") . mtl-edit-help)
 	    )
   )
