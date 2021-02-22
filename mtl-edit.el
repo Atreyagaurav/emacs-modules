@@ -37,6 +37,7 @@
 
 (setq mtl-chara-names (list "???"))
 (setq mtl-honorifics (list "kun" "sama" "san" "chan" "dono"))
+(setq mtl-insert-chara-end "")
 
 
 (setq mtl-pronouns-regex
@@ -44,6 +45,51 @@
 		 (mapcar #'(lambda (list)
 			     (concat "\\(" (mapconcat 'identity list "\\)\\|\\(") "\\)"))
 			 pronouns) "\\|") "\\)\\b"))
+
+;; Converstion to past tense rewritten from : https://github.com/kaitlynnhetzel/past_tense_generator
+(setq mtl-verbs-irregular #s(hash-table test equal data ("go" "went" "buy" "bought" "break" "broke" "sit" "sat" "come""came" "eat" "ate" "sleep" "slept" "see" "saw" "pay" "paid" "sing" "sang" "tell" "told" "get" "got" "teach" "taught" "feel" "felt" "hear" "heard" "understand" "understood" "is" "was" "are" "were" "make" "made" "lose" "lost" "speak" "spoke" "say" "said")))
+
+(setq mtl-verbs-single-form '("cut" "put" "let" "hurt" "quit" "read" "broadcast" "hit" "cost" "spread"))
+
+(setq mtl-vowels-list '("a" "e" "i" "o" "u" "y"))
+
+(setq mtl-verbs-end-hushers '("x" "lk" "sh" "ch" "ck" "h" "k" "nt" "lp" "wn" "st"))
+
+
+(defun add-double-consonant (verb)
+  (let ((chars (loop for c across verb collect (string c)))
+	(count (apply #'+
+		      (loop for c across verb collect
+			    (if (member (string c) mtl-vowels-list)
+				1 0)))))
+    (if (> count 1)
+	verb
+      (let ((rev-chars (reverse chars)))
+	(if (member (first rev-chars) mtl-verbs-end-hushers)
+	    verb
+	  (if (member (concat (first (rest rev-chars)) (first rev-chars)) mtl-verbs-end-hushers)
+	      verb
+	    (if (string= (first (rest rev-chars)) (first rev-chars))
+		verb
+	      (concat verb (first rev-chars))))))
+      )))
+
+
+(defun convert-to-past-tense (verb)
+  (let ((from-hash (gethash verb mtl-verbs-irregular)))
+    (if from-hash
+	from-hash
+      (if (member verb mtl-verbs-single-form)
+	  verb
+	(let* ((word-chars (loop for c across verb collect (string c)))
+	       (rev-word-chars (reverse word-chars)))
+	  (if (string= (first rev-word-chars) "e")
+	      (concat verb "d")
+	    (if (string= (first rev-word-chars) "y")
+		(if (member (first (rest rev-word-chars)) mtl-vowels-list)
+		    (concat (add-double-consonant verb) "ed")
+	      (concat (apply #'concat (reverse (rest rev-word-chars))) "ied")))))))))
+
 
 (defun pronoun-change-horizontal (word &optional step)
   (let* ((g (find-if #'(lambda (list)
@@ -82,6 +128,7 @@
 	  (delete-region (car bounds) (cdr bounds))
 	  (insert subs))))))
 
+
 ;; INTERACTIVE functions from here onwards
 
 (defun seperate-lines ()
@@ -104,12 +151,11 @@
 	(message "Characters: %s" (setq mtl-chara-names (cons name mtl-chara-names)))))
 
 
-(defun mtl-insert-chara-name (name end)
+(defun mtl-insert-chara-name (name)
   "Insert character's name from the list."
-  (interactive (list (ido-completing-read "Insert Character: " mtl-chara-names)
-		     (ido-completing-read "End>" '("" ": " " " "'s"))))
+  (interactive (list (ido-completing-read "Insert Character: " mtl-chara-names)))
   (mtl-add-chara-name name)
-  (insert (concat (capitalize name) end)))
+  (insert (concat (capitalize name) mtl-insert-chara-end)))
 
 
 (defun mtl-remove-chara-name (name)
@@ -137,6 +183,22 @@
   (re-search-backward mtl-pronouns-regex nil t 1)
   ;; (forward-char 1)
   )
+
+(defun mtl-goto-next-dialogue ()
+  "FIXME Temp func; Move the cursor to next dialogue."
+  (interactive)
+  ;; \n\([A-Za-z_?-]+: \)[[] didn't work idk why.
+  (when (re-search-forward "\n[[]" nil t 1)
+    (move-beginning-of-line nil)))
+
+(defun mtl-goto-prev-dialogue ()
+  "FIXME Temp func; Move the cursor to prev dialogue."
+  (interactive)
+  ;; \n\([A-Za-z_?-]+: \)[[] didn't work idk why.
+  ;; (let ((line-num (thing-at-point 'line t)))
+  ;;   (message line-num))
+  (when (re-search-backward "[]]" nil t 1)
+    (move-beginning-of-line nil)))
 
 (defun mtl-insert-text (text)
   (interactive "sEnter Text:")
@@ -177,6 +239,11 @@
   (interactive)
   (map-current-word #'capitalize))
 
+(defun mtl-past-tense ()
+  "Convert the current verb to past tense."
+  (interactive)
+  (map-current-word #'convert-to-past-tense))
+
 
 (define-minor-mode mtl-edit-mode
   "Mode to edit MTLs without significant effort."
@@ -198,6 +265,9 @@
 	    (,(kbd "r") . mtl-remove-chara-name)
 	    (,(kbd "t") . mtl-insert-text)
 	    (,(kbd "?") . mtl-edit-help)
+	    (,(kbd ">") . mtl-goto-next-dialogue)
+	    (,(kbd "<") . mtl-goto-prev-dialogue)
+	    (,(kbd "v") . mtl-past-tense)
 	    )
   )
 
