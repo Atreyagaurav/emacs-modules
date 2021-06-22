@@ -47,9 +47,146 @@
 			 pronouns) "\\|") "\\)\\b"))
 
 ;; Converstion to past tense rewritten from : https://github.com/kaitlynnhetzel/past_tense_generator
-(setq mtl-verbs-irregular #s(hash-table test equal data ("go" "went" "buy" "bought" "break" "broke" "sit" "sat" "come""came" "eat" "ate" "sleep" "slept" "see" "saw" "pay" "paid" "sing" "sang" "tell" "told" "get" "got" "teach" "taught" "feel" "felt" "hear" "heard" "understand" "understood" "is" "was" "are" "were" "make" "made" "lose" "lost" "speak" "spoke" "say" "said")))
-
-(setq mtl-verbs-single-form '("cut" "put" "let" "hurt" "quit" "read" "broadcast" "hit" "cost" "spread"))
+;; Irregular Verb list from https://www.gingersoftware.com/content/grammar-rules/verbs/list-of-irregular-verbs/
+(setq mtl-verbs-irregular #s(hash-table test equal data
+					("arise"	"arose"
+					 "awake"	"awoke"
+					 "be"	"was"
+					 "is" "was"
+					 "are" "were"
+					 "has" "had"
+					 "bear"	"bore"
+					 "beat"	"beat"
+					 "become"	"became"
+					 "begin"	"began"
+					 "bend"	"bent"
+					 "bet"	"bet"
+					 "bind"	"bound"
+					 "bite"	"bit"
+					 "bleed"	"bled"
+					 "blow"	"blew"
+					 "break"	"broke"
+					 "breed"	"bred"
+					 "bring"	"brought"
+					 "broadcast"	"broadcast"
+					 "build"	"built"
+					 "burst"	"burst"
+					 "buy"	"bought"
+					 "can"	"could"
+					 "catch"	"caught"
+					 "choose"	"chose"
+					 "cling"	"clung"
+					 "come"	"came"
+					 "cost"	"cost"
+					 "creep"	"crept"
+					 "cut"	"cut"
+					 "deal"	"dealt"
+					 "dig"	"dug"
+					 "do"	"did"
+					 "does" "did"
+					 "draw"	"drew"
+					 "drink"	"drank"
+					 "drive"	"drove"
+					 "eat"	"ate"
+					 "fall"	"fell"
+					 "feed"	"fed"
+					 "feel"	"felt"
+					 "fight"	"fought"
+					 "find"	"found"
+					 "fly"	"flew"
+					 "forbid"	"forbade"
+					 "forget"	"forgot"
+					 "forgive"	"forgave"
+					 "freeze"	"froze"
+					 "get"	"got"
+					 "give"	"gave"
+					 "go"	"went"
+					 "grind"	"ground"
+					 "grow"	"grew"
+					 "hang"	"hung"
+					 "have"	"had"
+					 "hear"	"heard"
+					 "hide"	"hid"
+					 "hit"	"hit"
+					 "hold"	"held"
+					 "hurt"	"hurt"
+					 "keep"	"kept"
+					 "kneel"	"knelt"
+					 "know"	"knew"
+					 "lay"	"laid"
+					 "lead"	"led"
+					 "leave"	"left"
+					 "lend"	"lent"
+					 "let" "let"
+					 "lie" 	"lay"
+					 "light"	"lit"
+					 "lose"	"lost"
+					 "make"	"made"
+					 "may"	"might"
+					 "mean"	"meant"
+					 "meet"	"met"
+					 "mow"	"mowed"
+					 "must"	"had to"
+					 "overtake"	"overtook"
+					 "pay"	"paid"
+					 "put"	"put"
+					 "quit" "quit"
+					 "read"	"read"
+					 "ride"	"rode"
+					 "ring"	"rang"
+					 "rise"	"rose"
+					 "run"	"ran"
+					 "saw"	"sawed"
+					 "say"	"said"
+					 "see"	"saw"
+					 "sell"	"sold"
+					 "send"	"sent"
+					 "set"	"set"
+					 "sew"	"sewed"
+					 "shake"	"shook"
+					 "shall"	"should"
+					 "shed"	"shed"
+					 "shine"	"shone"
+					 "shoot"	"shot"
+					 "show"	"showed"
+					 "shrink"	"shrank"
+					 "shut"	"shut"
+					 "sing"	"sang"
+					 "sink"	"sank"
+					 "sit"	"sat"
+					 "sleep"	"slept"
+					 "slide"	"slid"
+					 "smell"	"smelt"
+					 "sow"	"sowed"
+					 "speak"	"spoke"
+					 "spend"	"spent"
+					 "spit"	"spat"
+					 "spread"	"spread"
+					 "stand"	"stood"
+					 "steal"	"stole"
+					 "stick"	"stuck"
+					 "sting"	"stung"
+					 "stink"	"stank"
+					 "strike"	"struck"
+					 "swear"	"swore"
+					 "sweep"	"swept"
+					 "swell"	"swelled"
+					 "swim"	"swam"
+					 "swing"	"swung"
+					 "take"	"took"
+					 "teach"	"taught"
+					 "tear"	"tore"
+					 "tell"	"told"
+					 "think"	"thought"
+					 "throw"	"threw"
+					 "understand"	"understood"
+					 "wake"	"woke"
+					 "wear"	"wore"
+					 "weep"	"wept"
+					 "will"	"would"
+					 "win"	"won"
+					 "wind"	"wound"
+					 "write"	"wrote")))
 
 (setq mtl-vowels-list '("a" "e" "i" "o" "u" "y"))
 
@@ -79,8 +216,6 @@
   (let ((from-hash (gethash verb mtl-verbs-irregular)))
     (if from-hash
 	from-hash
-      (if (member verb mtl-verbs-single-form)
-	  verb
 	(let* ((word-chars (loop for c across verb collect (string c)))
 	       (rev-word-chars (reverse word-chars)))
 	  (if (string= (first rev-word-chars) "e")
@@ -88,7 +223,8 @@
 	    (if (string= (first rev-word-chars) "y")
 		(if (member (first (rest rev-word-chars)) mtl-vowels-list)
 		    (concat (add-double-consonant verb) "ed")
-	      (concat (apply #'concat (reverse (rest rev-word-chars))) "ied")))))))))
+		  (concat (apply #'concat (reverse (rest rev-word-chars))) "ied"))
+	      (concat verb "ed")))))))
 
 
 (defun pronoun-change-horizontal (word &optional step)
@@ -188,7 +324,8 @@
   "FIXME Temp func; Move the cursor to next dialogue."
   (interactive)
   ;; \n\([A-Za-z_?-]+: \)[[] didn't work idk why.
-  (when (re-search-forward "\n[[]" nil t 1)
+  (move-end-of-line nil)
+  (when (re-search-forward ":" nil t 1)
     (move-beginning-of-line nil)))
 
 (defun mtl-goto-prev-dialogue ()
@@ -197,7 +334,7 @@
   ;; \n\([A-Za-z_?-]+: \)[[] didn't work idk why.
   ;; (let ((line-num (thing-at-point 'line t)))
   ;;   (message line-num))
-  (when (re-search-backward "[]]" nil t 1)
+  (when (re-search-backward ":" nil t 1)
     (move-beginning-of-line nil)))
 
 (defun mtl-insert-text (text)
