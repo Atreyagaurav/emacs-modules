@@ -224,7 +224,9 @@
 		(if (member (first (rest rev-word-chars)) mtl-vowels-list)
 		    (concat (add-double-consonant verb) "ed")
 		  (concat (apply #'concat (reverse (rest rev-word-chars))) "ied"))
-	      (concat verb "ed")))))))
+	      (if (member (first (rest rev-word-chars)) mtl-vowels-list)
+		  (concat (add-double-consonant verb) "ed")
+		(concat verb "ed"))))))))
 
 
 (defun pronoun-change-horizontal (word &optional step)
@@ -411,7 +413,7 @@
 (defun mtl-edit-help ()
   (interactive)
   (with-temp-buffer
-    (map-keymap (lambda (kb f)
+    (map-keymap (lambda (f)
 		  (princ (key-description (where-is-internal f mtl-edit-mode-map t)))
 		  (princ "  -> ")(princ f)(princ "\n")
 		  ;; (princ "\t(")
