@@ -4,9 +4,10 @@ These are my personal collection of emacs modes and modules I have written with 
 
 * Basic description
 
-| File             | Module        | Short Description                                    |
-|------------------+---------------+------------------------------------------------------|
-| mtl-edit.el      | MTL edit mode | A minor mode for editing Machine translated outputs. |
+| File         | Module           | Short Description                                                 |
+|--------------+------------------+-------------------------------------------------------------------|
+| mtl-edit.el  | MTL edit mode    | A minor mode for editing Machine translated outputs.              |
+| calc-mode.el | Calculation mode | A minor mode to parse and calculate expression while in text mode |
 
 * Long Description
 
@@ -16,3 +17,28 @@ Here is a demo video, (please forgive me for tying to type without disabling the
 
 [https://youtu.be/DJUTfHWyfew]
 
+** Calc mode
+   This mode was created because I needed some org-babel code blocks like functionality for my LaTeX document but while being inside the LaTeX. It's just single line code/expressions with support for templates.
+
+   The evaluation is done in a python subprocess, hence you can assign variables and then reuse them. Except for the first line in the equation array, other lines are generated from the template in the comments.
+#+begin_src latex
+% <<a=46.1>>
+% <<b=46.4>>
+% <<c=47.9>>
+% <<d=45.8>>
+% <<e=46.8>>
+% <<f=48.6>>
+% <<g=48>>
+% <<h=47.7>>
+% <<i=50.6>>
+
+\begin{eqnarray*}
+  S_x &=& \frac{(a+2*d+g)-(c+2*f+i)}{8\Delta}\\
+  % S_x &=& \frac{<<(a+2*d+g)>>-<<(c+2*f+i)>>}{80}\\
+  S_x &=& \frac{185.7-195.7}{80}\\
+  % S_x &=& \frac{<<(a+2*d+g)-(c+2*f+i)>>}{80}\\
+  S_x &=& \frac{-10.0}{80}\\
+  % S_x &=& <<((a+2*d+g)-(c+2*f+i))/80>>\\
+  S_x &=& -0.125\\
+\end{eqnarray*}
+#+end_src
