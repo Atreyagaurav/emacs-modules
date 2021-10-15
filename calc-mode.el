@@ -22,7 +22,6 @@
 				 ))
   
   (set-process-filter calc-subprocess-process 'calc-filter-func)
-  ;; (process-send-string calc-subprocess-process "import sys\nsys.ps1='>>>'\n")
   )
 
 (defun calc-clear-last-eval-string ()
@@ -98,10 +97,12 @@
   (save-excursion
     (let ((newln (calc-eval-template beg end)) tmp)
       (when (> (length (string-trim newln)) 0)
-      (insert "\n")
-      (setq tmp (point))
-      (insert newln)
-      (uncomment-region tmp (point))))
+	(goto-char (max beg end))
+	(insert "\n")
+	(setq tmp (point))
+	(insert (string-trim newln "\n+"))
+	(uncomment-region tmp (point))
+	(insert "\n")))
     ))
 
 (defun calc-kill-process ()
