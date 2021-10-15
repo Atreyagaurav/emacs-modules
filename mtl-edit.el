@@ -52,6 +52,7 @@
 					("arise"	"arose"
 					 "awake"	"awoke"
 					 "be"	"was"
+					 "am" "was"
 					 "is" "was"
 					 "are" "were"
 					 "has" "had"
@@ -255,6 +256,22 @@
 	(nth (position word group :test #'string-equal) next-group)))))
 
 
+(defun expand-eps (word &optional expand-to)
+  "this is tricky so it's just there."
+  (let* ((terms (split-string word "'"))
+	 (noun (first terms))
+	 (verb (first (rest terms))))
+    (concat noun " " (or expand-to (if (string= verb "s")
+				       "is"
+				     (if (string= verb "ve")
+					 "have"
+				       (if (string= verb "d")
+					   "would"
+					 (if (string= verb "m")
+					     "am"
+					   "'s"))))))))
+
+
 (defun map-current-word (change-func &rest args)
   (let* ((bounds (if (use-region-p)
                      (cons (region-beginning) (region-end))
@@ -363,6 +380,16 @@
   (interactive)
   (map-current-word #'pronoun-change-horizontal -1))
 
+(defun mtl-expand-eps-default ()
+  "Expand the 's with noun/pronoun into default expansion."
+  (interactive)
+  (map-current-word #'expand-eps))
+
+(defun mtl-expand-eps-entry (verb)
+  "Expand the 's with noun/pronoun into non-default expansion."
+  (interactive "sEnter expansion Text:")
+  (map-current-word #'expand-eps verb))
+
 (defun mtl-upcase ()
   "upcase current word."
   (interactive)
@@ -398,6 +425,8 @@
 	    (,(kbd "a") . mtl-add-chara-name)
 	    (,(kbd "i") . mtl-insert-chara-name)
 	    (,(kbd "-") . mtl-insert-honorifics)
+	    (,(kbd "w") . mtl-expand-eps-default)
+	    (,(kbd "q") . mtl-expand-eps-entry)
 	    (,(kbd "c") . mtl-capitalize)
 	    (,(kbd "u") . mtl-upcase)
 	    (,(kbd "d") . mtl-downcase)
