@@ -70,19 +70,24 @@
   )
 
 (defun calc-parse-template (string)
-  (let ((res "") (expression ""))
-    (when (string-match "<<\\(.*\\)>>" string)
-      (setq expression (match-string 1 string))
-      (setq res (calc-eval-string expression)))
-  res))
+  (let ((res "") (expression "") (fmt "%s"))
+    (if (match-string 2 string)
+      (let* ((expression (match-string 1 string))
+	(res (calc-eval-string expression))
+	(fmt (match-string 2 string)))
+	(if (string-match-p "[0-9.]*[df]" fmt)
+	    (setq res (string-to-number res)))
+	(format (concat "%" fmt) res))
+      (calc-eval-string (match-string 1 string)))))
 
 (defun calc-eval-template (beg end)
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (list (point-min) (point-min))))
   (let ((region (buffer-substring-no-properties beg end)) newln)
-    (setq newln (replace-regexp-in-string "<<\\(.*?\\)>>"
-					  'calc-parse-template region))
+    (setq newln (replace-regexp-in-string
+		 "<<\\(.*?\\);\\([0-9.a-zA-Z]+\\)?>>"
+		 'calc-parse-template region))
     (message "%s" newln)
   ))
 
@@ -90,15 +95,13 @@
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (list (point-min) (point-min))))
-  (let ((region (buffer-substring-no-properties beg end)) beg)
-    (setq newln (replace-regexp-in-string "<<\\(.*?\\)>>"
-					  'calc-parse-template region))
-    (when (> (length (string-trim newln)) 0)
-      (goto-char end)
+  (save-excursion
+    (let ((newln (calc-eval-template beg end)) tmp)
+      (when (> (length (string-trim newln)) 0)
       (insert "\n")
-      (setq beg (point))
+      (setq tmp (point))
       (insert newln)
-      (uncomment-region beg (point)))
+      (uncomment-region tmp (point))))
     ))
 
 (defun calc-kill-process ()
