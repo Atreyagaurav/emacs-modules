@@ -35,10 +35,13 @@ Here is a demo video, (please forgive me for tying to type without disabling the
 \begin{eqnarray*}
   S_x &=& \frac{(a+2*d+g)-(c+2*f+i)}{8\Delta}\\
   % S_x &=& \frac{<<(a+2*d+g)>>-<<(c+2*f+i)>>}{80}\\
-  S_x &=& \frac{185.7-195.7}{80}\\
   % S_x &=& \frac{<<(a+2*d+g)-(c+2*f+i)>>}{80}\\
-  S_x &=& \frac{-10.0}{80}\\
   % S_x &=& <<((a+2*d+g)-(c+2*f+i))/80>>\\
+  S_x &=& \frac{185.7-195.7}{80}\\
+  S_x &=& \frac{-10.0}{80}\\
   S_x &=& -0.125\\
 \end{eqnarray*}
 #+end_src
+
+*** Bugs
+    The point jumps when I'm done with the eval template thing, idk why...
