@@ -38,35 +38,46 @@ Here is a demo video, (please forgive me for tying to type without disabling the
   % S_x &=& \frac{<<(a+2*d+g);.1f>>-<<(c+2*f+i);>>}{80}\\
   % S_x &=& \frac{<<(a+2*d+g)-(c+2*f+i);.1f>>}{80}\\
   % S_x &=& <<s_x=((a+2*d+g)-(c+2*f+i))/80;>><<s_x;.4f>>\\
-
   S_x &=& \frac{185.7-195.7}{80}\\
   S_x &=& \frac{-10.0}{80}\\
   S_x &=& -0.1250\\
-  
   S_y &=& \frac{(g+2*h+i)-(a+2*b+c)}{8\Delta}\\
   % S_y &=& \frac{<<(g+2*h+i);.2f>>-<<(a+2*b+c);.2f>>}{80}\\
   % S_y &=& \frac{<<(g+2*h+i)-(a+2*b+c);.2f>>}{80}\\
   % S_y &=& <<s_y=((g+2*h+i)-(a+2*b+c))/80;>><<s_y;.4f>>\\
-
   S_y &=& \frac{194.00-186.80}{80}\\
   S_y &=& \frac{7.20}{80}\\
   S_y &=& 0.0900\\
-  
   S &=& \sqrt{S_x^2+S_y^2}\\
   % S &=& \sqrt{<<s_x*s_x;.4f>>+<<s_y*s_y;.4f>>}\\
   % S &=& \sqrt{<<s_x*s_x+s_y*s_y;.4f>>}\\
   % S &=& <<s = math.sqrt(s_x*s_x+s_y*s_y);>><<s;.4f>>\\
   % S^\circ &=& \tan^{-1}(<<s;.4f>>) = <<math.atan(s)*180/math.pi;.2f>>^\circ\\
   % Aspect &=& <<a=math.atan2(s_x,s_y);>><<a;.3f>> = <<a*180/math.pi;.2f>>^\circ
-
   S &=& \sqrt{0.0156+0.0081}\\
   S &=& \sqrt{0.0237}\\
   S &=& 0.1540\\
   S^\circ &=& \tan^{-1}(0.1540) = 8.76^\circ\\
   Aspect &=& -0.947 = -54.25^\circ
-
 \end{eqnarray*}
 #+end_src
 
-*** Bugs
-    The point jumps when I'm done with the eval template thing, idk why...
+*** Configuration
+    Clone the repo into your machine and add the path to ~load-path~, or just load the individual module you want to add.
+
+    Sample confuguration using ~use-package~ I use is as follows:
+    
+#+begin_src emacs-lisp :tangle yes
+(use-package mtl-edit-mode
+  :load-path "~/.emacs.d/myfunc/"
+  :commands mtl-edit-mode
+  :init (bind-key "C-x /" 'mtl-edit-mode)
+  )
+
+(use-package calt-mode
+  :load-path "~/.emacs.d/myfunc/"
+  :commands calt-mode
+  :hook text-mode
+  :config (local-set-key (kbd "C-e") calt-key-map)
+  )
+#+end_src

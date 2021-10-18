@@ -134,7 +134,7 @@
 	(insert "\n")))
     ))
 
-(defun calt-kill-process ()
+(defun calt-stop-process ()
   (interactive)
   (kill-process (concat "calt-" calt-subprocess-engine))
   )
@@ -154,20 +154,51 @@
       (insert (format fmt text)))
     )
 
+(defun calt-increment-number (step)
+  (interactive "P")
+  (let* ((bounds (if (use-region-p)
+                     (cons (region-beginning) (region-end))
+                   (bounds-of-thing-at-point 'symbol)))
+         (word (buffer-substring-no-properties (car bounds) (cdr bounds)))
+	 (step (or step 1)))
+    (when bounds
+      (let ((ma (string-match "\\(.*[^0-9]\\)\\([0-9]+\\)\\([/_.,-\"']\\)?" word)))
+	(when ma
+	  (delete-region (car bounds) (cdr bounds))
+	  (insert (concat
+		   (match-string 1 word)
+		   (number-to-string (+ step (string-to-number
+					      (match-string 2 word))))
+		   (match-string 3 word))
+		  ))))))
+
+(defun calt-eval-elisp-and-replace ()
+  "Replace the preceding sexp with its value."
+  (interactive)
+  (backward-kill-sexp)
+  (condition-case nil
+      (prin1 (eval (read (current-kill 0)))
+             (current-buffer))
+    (error (message "Invalid expression")
+           (insert (current-kill 0)))))
+
+(setq calt-key-map (make-sparse-keymap))
+(define-key calt-key-map (kbd "p") 'calt-start-process)
+(define-key calt-key-map (kbd "q") 'calt-stop-process)
+(define-key calt-key-map (kbd "T") 'calt-eval-template)
+(define-key calt-key-map (kbd "t") 'calt-eval-and-insert-template)
+(define-key calt-key-map (kbd "r") 'calt-eval-and-replace-region)
+(define-key calt-key-map (kbd "R") 'calt-eval-region)
+(define-key calt-key-map (kbd "f") 'calt-format-region)
+(define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-replace)
+(define-key calt-key-map (kbd "+") 'calt-increment-number)
+
 
 (define-minor-mode calt-mode
   "Minor mode for Calculation based templating."
   :lighter " Calt"
-  :keymap `(
-	    (,(kbd "p") . calt-start-process)
-	    (,(kbd "q") . calt-stop-process)
-	    (,(kbd "T") . calt-eval-template)
-	    (,(kbd "t") . calt-eval-and-insert-template)
-	    (,(kbd "r") . calt-eval-and-replace-region)
-	    (,(kbd "R") . calt-eval-region)
-	    (,(kbd "f") . calt-format-region)
-	    ))
-
+  ;; :keymap `((,(kbd "C-e") . calt-key-map))
+  )
 
 (provide 'calt-mode)
 ;;; calt-mode.el ends here
