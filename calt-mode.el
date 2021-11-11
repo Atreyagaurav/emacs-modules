@@ -6,10 +6,10 @@
 ;; Version: 0.1
 ;; Keywords: calculator, templating, LaTeX
 
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
 
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,7 +17,8 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+;; along with this program.  If not, see
+;; <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -27,6 +28,8 @@
 
 (setq calt-subprocess-engine "python")
 (setq calt-subprocess-arg "-i")
+
+(setq calt-format-string "%.2f")
 
 (defun calt-filter-func (proc string)
   (internal-default-process-filter proc string)
@@ -40,14 +43,16 @@
 (defun calt-start-process ()
   (interactive)
   (calt-clear-last-eval-string)
-  (setq calt-subprocess-process (start-process
-				 (concat "calt-" calt-subprocess-engine)
-				 (concat "*calt-" calt-subprocess-engine "*")
-				 calt-subprocess-engine
-				 calt-subprocess-arg
-				 ))
-  
+  (setq calt-subprocess-process
+	(start-process
+	 (concat "calt-" calt-subprocess-engine)
+	 (concat "*calt-" calt-subprocess-engine "*")
+	 calt-subprocess-engine
+	 calt-subprocess-arg
+	 ))
+  (set-process-query-on-exit-flag calt-subprocess-process nil)
   (set-process-filter calt-subprocess-process 'calt-filter-func)
+  (message "%s process started" calt-subprocess-engine)
   )
 
 (defun calt-clear-last-eval-string ()
@@ -115,7 +120,7 @@
     (setq newln (replace-regexp-in-string
 		 "<<\\(.*?\\);\\([0-9.a-zA-Z]+\\)?>>"
 		 'calt-parse-template region))
-    (message "%s" newln)
+    (kill-new (message "%s" newln))
   ))
 
 (defun calt-eval-and-insert-template (beg end)
@@ -129,7 +134,8 @@
 	(goto-char (max beg end))
 	(insert "\n")
 	(setq tmp (point))
-	(insert (string-trim newln "\n+"))
+	(insert (string-trim-right
+		 (string-trim-left newln "\n+") "\n+"))
 	(uncomment-region tmp (point))
 	(insert "\n")))
     ))
@@ -139,30 +145,40 @@
   (kill-process (concat "calt-" calt-subprocess-engine))
   )
 
+(defun calt-format-region-last (beg end)
+      (interactive (if (use-region-p)
+                   (list (region-beginning) (region-end))
+                 (let ((bnd (bounds-of-thing-at-point 'symbol)))
+		   (list (first bnd) (rest bnd)))))
+      (let ((text (buffer-substring-no-properties beg end)))
+      (if (string-match-p "%[0-9.]*[dfex]" calt-format-string)
+	    (setq text (string-to-number text)))
+      (kill-region beg end)
+      (insert (format calt-format-string text))))
+
 (defun calt-format-region (beg end)
     (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (let ((bnd (bounds-of-thing-at-point 'symbol)))
 		   (list (first bnd) (rest bnd)))))
-    (let ((fmt (concat
-		  "%"
-		  (read-string "Enter format string: %")))
-	  (text (buffer-substring-no-properties beg end)))
-      (if (string-match-p "%[0-9.]*[dfex]" fmt)
-	    (setq text (string-to-number text)))
-      (kill-region beg end)
-      (insert (format fmt text)))
-    )
+    (let ((fmt  (read-string "Enter format string:"
+			     calt-format-string)))
+      (setq calt-format-string fmt)
+      (calt-format-region-last beg end)))
 
 (defun calt-increment-number (step)
   (interactive "P")
   (let* ((bounds (if (use-region-p)
                      (cons (region-beginning) (region-end))
                    (bounds-of-thing-at-point 'symbol)))
-         (word (buffer-substring-no-properties (car bounds) (cdr bounds)))
+         (word (buffer-substring-no-properties
+		(car bounds)
+		(cdr bounds)))
 	 (step (or step 1)))
     (when bounds
-      (let ((ma (string-match "\\(.*[^0-9]\\)\\([0-9]+\\)\\([/_.,-\"']\\)?" word)))
+      (let ((ma (string-match
+		 "\\(.*[^0-9]\\)\\([0-9]+\\)\\([/_.,-\"']\\)?"
+		 word)))
 	(when ma
 	  (delete-region (car bounds) (cdr bounds))
 	  (insert (concat
@@ -188,8 +204,9 @@
 (define-key calt-key-map (kbd "T") 'calt-eval-template)
 (define-key calt-key-map (kbd "t") 'calt-eval-and-insert-template)
 (define-key calt-key-map (kbd "r") 'calt-eval-and-replace-region)
-(define-key calt-key-map (kbd "R") 'calt-eval-region)
-(define-key calt-key-map (kbd "f") 'calt-format-region)
+(define-key calt-key-map (kbd "R") 'calt-eval-regio)
+(define-key calt-key-map (kbd "F") 'calt-format-region)
+(define-key calt-key-map (kbd "f") 'calt-format-region-last)
 (define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-replace)
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
 

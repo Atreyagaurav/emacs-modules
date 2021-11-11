@@ -62,10 +62,10 @@ Here is a demo video, (please forgive me for tying to type without disabling the
 \end{eqnarray*}
 #+end_src
 
-*** Configuration
+** Configuration
     Clone the repo into your machine and add the path to ~load-path~, or just load the individual module you want to add.
 
-    Sample confuguration using ~use-package~ I use is as follows:
+    Sample configuration using ~use-package~ I use is as follows:
     
 #+begin_src emacs-lisp :tangle yes
 (use-package mtl-edit-mode
