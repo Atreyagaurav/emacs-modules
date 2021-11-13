@@ -145,6 +145,19 @@
   (kill-process (concat "calt-" calt-subprocess-engine))
   )
 
+(defun calt-exp-to-latex (beg end)
+  (interactive (if (use-region-p)
+                   (list (region-beginning) (region-end))
+                 (let ((bnd (bounds-of-thing-at-point 'symbol)))
+		   (list (first bnd) (rest bnd)))))
+  (let ((text (buffer-substring-no-properties beg end)))
+    (if (string-match "\\([0-9.-]+\\)e\\([0-9.-]+\\)" text)
+	(let ((num (match-string 1 text))
+	      (exp (match-string 2 text)))
+	  (kill-region beg end)
+	  (insert (format "%s×10^{%s}" num exp)))
+      )))
+
 (defun calt-format-region-last (beg end)
       (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
@@ -209,6 +222,7 @@
 (define-key calt-key-map (kbd "f") 'calt-format-region-last)
 (define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-replace)
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
+(define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
 
 
 (define-minor-mode calt-mode
