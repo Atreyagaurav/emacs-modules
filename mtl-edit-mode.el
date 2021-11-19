@@ -432,23 +432,12 @@
 	    (,(kbd "d") . mtl-downcase)
 	    (,(kbd "r") . mtl-remove-chara-name)
 	    (,(kbd "t") . mtl-insert-text)
-	    (,(kbd "?") . mtl-edit-help)
 	    (,(kbd ">") . mtl-goto-next-dialogue)
 	    (,(kbd "<") . mtl-goto-prev-dialogue)
 	    (,(kbd "v") . mtl-past-tense)
 	    )
   )
 
-(defun mtl-edit-help ()
-  (interactive)
-  (with-temp-buffer
-    (map-keymap (lambda (f)
-		  (princ (key-description (where-is-internal f mtl-edit-mode-map t)))
-		  (princ "  -> ")(princ f)(princ "\n")
-		  ;; (princ "\t(")
-		  ;; (princ (documentation f))
-		  ;; (princ ")\n")
-		  ) mtl-edit-mode-map)))
 
 
 (provide 'mtl-edit-mode)
