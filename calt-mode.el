@@ -143,18 +143,16 @@
   )
 
 (defun calt-exp-to-latex (beg end)
-  ;; rewrite this code using replace-regexp in region
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (let ((bnd (bounds-of-thing-at-point 'symbol)))
 		   (list (first bnd) (rest bnd)))))
   (let ((text (buffer-substring-no-properties beg end)))
-    (if (string-match "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)" text)
-	(let ((num (match-string 1 text))
-	      (exp (match-string 2 text)))
-	  (kill-region beg end)
-	  (insert (format "%s×10^{%s}" num exp)))
-      )))
+    (replace-regexp
+     "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)"
+     "\\1×10^{\\2}"
+     nil beg end)
+      ))
 
 (defun calt-format-region-last (beg end)
       (interactive (if (use-region-p)
