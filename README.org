@@ -7,7 +7,7 @@ These are my personal collection of emacs modes and modules I have written with 
 | File         | Module           | Short Description                                                 |
 |--------------+------------------+-------------------------------------------------------------------|
 | mtl-edit.el  | MTL edit mode    | A minor mode for editing Machine translated outputs.              |
-| calc-mode.el | Calculation mode | A minor mode to parse and calculate expression while in text mode |
+| calt-mode.el | Calt mode | A minor mode to parse and calculate expression while in text mode |
 
 * Long Description
 
@@ -17,7 +17,7 @@ Here is a demo video, (please forgive me for tying to type without disabling the
 
 [https://youtu.be/DJUTfHWyfew]
 
-** Calc mode
+** Calt mode (Calculation Template Mode)
    This mode was created because I needed some org-babel code blocks like functionality for my LaTeX document but while being inside the LaTeX. It's just single line code/expressions with support for templates.
 
    The evaluation is done in a python subprocess, hence you can assign variables and then reuse them. Except for the first line in the equation array, other lines are generated from the template in the comments.

@@ -132,12 +132,9 @@
     (let ((newln (calt-eval-template beg end)) tmp)
       (when (> (length (string-trim newln)) 0)
 	(goto-char (max beg end))
-	(insert "\n")
 	(setq tmp (point))
-	(insert (string-trim-right
-		 (string-trim-left newln "\n+") "\n+"))
-	(uncomment-region tmp (point))
-	(insert "\n")))
+	(insert newln)
+	(uncomment-region tmp (point))))
     ))
 
 (defun calt-stop-process ()
@@ -146,12 +143,13 @@
   )
 
 (defun calt-exp-to-latex (beg end)
+  ;; rewrite this code using replace-regexp in region
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (let ((bnd (bounds-of-thing-at-point 'symbol)))
 		   (list (first bnd) (rest bnd)))))
   (let ((text (buffer-substring-no-properties beg end)))
-    (if (string-match "\\([0-9.-]+\\)e\\([0-9.-]+\\)" text)
+    (if (string-match "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)" text)
 	(let ((num (match-string 1 text))
 	      (exp (match-string 2 text)))
 	  (kill-region beg end)
