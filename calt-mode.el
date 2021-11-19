@@ -100,16 +100,23 @@
   )
 
 (defun calt-parse-template (string)
-  (let ((res "") (expression "") (fmt "%s"))
     (if (match-string 2 string)
       (let* ((expression (match-string 1 string))
 	(res (calt-eval-string expression))
 	(fmt (match-string 2 string)))
+	(if
+	    (string-match-p "=" expression)
+	    ;; (member (string-to-char "=") (string-to-list expression))
+	    (setq res (calt-eval-string
+		       (first (split-string expression "=")))))
 	(if (string-match-p "[0-9.]*[dfex]" fmt)
 	    (setq res (string-to-number res))
 	  (setq res (replace-quote res)))
+	
+	;; (message "rest: %s" res)
+	;; (message "fmt: %s" fmt)
 	(format (concat "%" fmt) res))
-      (replace-quote (calt-eval-string (match-string 1 string))))))
+      (replace-quote (calt-eval-string (match-string 1 string)))))
 
 (defun calt-eval-template (beg end)
   (interactive (if (use-region-p)
@@ -120,6 +127,7 @@
     (setq newln (replace-regexp-in-string
 		 "<<\\(.*?\\);\\([0-9.a-zA-Z]+\\)?>>"
 		 'calt-parse-template region))
+    ;; kill-new is new entry on kill menu
     (kill-new (message "%s" newln))
   ))
 
@@ -147,12 +155,13 @@
                    (list (region-beginning) (region-end))
                  (let ((bnd (bounds-of-thing-at-point 'symbol)))
 		   (list (first bnd) (rest bnd)))))
-  (let ((text (buffer-substring-no-properties beg end)))
-    (replace-regexp
+  (save-excursion
+    (goto-char beg)
+    (when (re-search-forward
      "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)"
-     "\\1×10^{\\2}"
-     nil beg end)
-      ))
+     end)
+      (replace-match "\\1×10^{\\2}")
+      )))
 
 (defun calt-format-region-last (beg end)
       (interactive (if (use-region-p)
