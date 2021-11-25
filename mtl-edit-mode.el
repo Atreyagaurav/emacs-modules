@@ -272,6 +272,51 @@
 					   "'s"))))))))
 
 
+;; from: https://github.com/novoid/title-capitalization.el/blob/master/title-capitalization.el
+(defun title-capitalization (beg end)
+  "Proper English title capitalization of a marked region"
+  ;; - before: the presentation of this heading of my own from my keyboard and yet
+  ;; - after:  The Presentation of This Heading of My Own from My Keyboard and Yet
+  ;; - before: a a a a a a a a
+  ;; - after:  A a a a a a a A
+  (interactive "r")
+  (save-excursion
+    (let* (
+	   ;; basic list of words which don't get capitalized according to simplified rules:
+	   ;; http://karl-voit.at/2015/05/25/elisp-title-capitalization/
+           (do-not-capitalize-basic-words '("a" "ago" "an" "and" "as" "at" "but" "by" "for"
+                                            "from" "in" "into" "it" "next" "nor" "of" "off"
+                                            "on" "onto" "or" "over" "past" "so" "the" "till"
+                                            "to" "up" "yet"
+                                            "n" "t" "es" "s"))
+	   ;; if user has defined 'my-do-not-capitalize-words, append to basic list:
+           (do-not-capitalize-words (if (boundp 'my-do-not-capitalize-words)
+                                        (append do-not-capitalize-basic-words my-do-not-capitalize-words )
+                                      do-not-capitalize-basic-words
+                                      )
+                                    )
+           )
+      ;; go to begin of first word:
+      (goto-char beg)
+      (capitalize-word 1)
+      ;; go through the region, word by word:
+      (while (< (point) end)
+        (skip-syntax-forward "^w" end)
+        (let ((word (thing-at-point 'word)))
+;;        (let ((word (thing-at-point 'word t)))
+          (if (stringp word)
+              ;; capitalize current word except it is list member:
+              (if (member (downcase word) do-not-capitalize-words)
+                  (downcase-word 1)
+                (capitalize-word 1)))))
+      ;; capitalize last word in any case:
+      (backward-word 1)
+      (if (and (>= (point) beg)
+               (not (member (or (thing-at-point 'word t) "s")
+                            '("n" "t" "es" "s"))))
+          (capitalize-word 1)))))
+
+
 (defun map-current-word (change-func &rest args)
   (let* ((bounds (if (use-region-p)
                      (cons (region-beginning) (region-end))
@@ -428,6 +473,7 @@
 	    (,(kbd "w") . mtl-expand-eps-default)
 	    (,(kbd "q") . mtl-expand-eps-entry)
 	    (,(kbd "c") . mtl-capitalize)
+	    (,(kbd "C") . title-capitalization)
 	    (,(kbd "u") . mtl-upcase)
 	    (,(kbd "d") . mtl-downcase)
 	    (,(kbd "r") . mtl-remove-chara-name)

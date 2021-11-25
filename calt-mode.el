@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021  
 
 ;; Author: Gaurav Atreya <allmanpride@gmail.com>
-;; Version: 0.1
+;; Version: 0.2
 ;; Keywords: calculator, templating, LaTeX
 
 ;; This program is free software; you can redistribute it and/or
@@ -151,16 +151,12 @@
   )
 
 (defun calt-exp-to-latex (beg end)
-  (interactive (if (use-region-p)
-                   (list (region-beginning) (region-end))
-                 (let ((bnd (bounds-of-thing-at-point 'symbol)))
-		   (list (first bnd) (rest bnd)))))
+  (interactive "r")
   (save-excursion
     (goto-char beg)
-    (when (re-search-forward
-     "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)"
-     end)
-      (replace-match "\\1×10^{\\2}")
+    (while (re-search-forward
+     "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)")
+      (replace-match "\\1 \\\\times 10^{\\2}")
       )))
 
 (defun calt-format-region-last (beg end)
@@ -229,6 +225,24 @@
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
 (define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
 
+;; things it modifies for the current mode
+
+(defun insert-or-replace-x (beg end)
+  "If a region is selected, replaces * by × otherwise inserts ×
+as normal. Useful in LaTeX or to convert mathmatical expression
+to human redable one."
+  (interactive (if (use-region-p)
+                   (list (region-beginning) (region-end))
+                 (list (point) (point))))
+  (if (= beg end)
+      (insert "×")
+      (when (re-search-forward "*" end)
+	(replace-match "×")
+	)))
+
+
+(local-set-key "×" 'insert-or-replace-x)
+
 
 (define-minor-mode calt-mode
   "Minor mode for Calculation based templating."
@@ -238,3 +252,4 @@
 
 (provide 'calt-mode)
 ;;; calt-mode.el ends here
+
