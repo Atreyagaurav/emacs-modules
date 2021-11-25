@@ -100,23 +100,23 @@
   )
 
 (defun calt-parse-template (string)
+  (save-match-data
+    ;; string-match-p shouldn't modify match data but it was being
+    ;; modified somewhere, so this will prevent the bug.
     (if (match-string 2 string)
       (let* ((expression (match-string 1 string))
 	(res (calt-eval-string expression))
 	(fmt (match-string 2 string)))
 	(if
 	    (string-match-p "=" expression)
-	    ;; (member (string-to-char "=") (string-to-list expression))
-	    (setq res (calt-eval-string
+	    (setq res (calt-eval-string ; gets the value of last assigned variable.
 		       (first (split-string expression "=")))))
 	(if (string-match-p "[0-9.]*[dfex]" fmt)
-	    (setq res (string-to-number res))
+	    (setq res (string-to-number res)) ;if the format is number
+					      ;we need to convert it.
 	  (setq res (replace-quote res)))
-	
-	;; (message "rest: %s" res)
-	;; (message "fmt: %s" fmt)
 	(format (concat "%" fmt) res))
-      (replace-quote (calt-eval-string (match-string 1 string)))))
+      (replace-quote (calt-eval-string (match-string 1 string))))))
 
 (defun calt-eval-template (beg end)
   (interactive (if (use-region-p)
