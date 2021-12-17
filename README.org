@@ -4,10 +4,11 @@ These are my personal collection of emacs modes and modules I have written with 
 
 * Basic description
 
-| File         | Module           | Short Description                                                 |
-|--------------+------------------+-------------------------------------------------------------------|
-| mtl-edit.el  | MTL edit mode    | A minor mode for editing Machine translated outputs.              |
-| calt-mode.el | Calt mode | A minor mode to parse and calculate expression while in text mode |
+| File           | Module        | Short Description                                                  |
+|----------------+---------------+--------------------------------------------------------------------|
+| mtl-edit.el    | MTL edit mode | A minor mode for editing Machine translated outputs.               |
+| remind-mode.el | Remind mode   | Major mode for editing [[https://dianne.skoll.ca/projects/remind/][remind]] script files.                        |
+| calt-mode.el   | Calt mode     | A minor mode to parse and calculate expression while in text mode. |
 
 * Long Description
 
@@ -16,6 +17,9 @@ These are my personal collection of emacs modes and modules I have written with 
 Here is a demo video, (please forgive me for tying to type without disabling the mtl-mode).
 
 [https://youtu.be/DJUTfHWyfew]
+
+** Remind mode
+   This is to edit remind files, there isn't much here except for basic syntax highlighting to differentiate the keywords and comments and such.
 
 ** Calt mode (Calculation Template Mode)
    This mode was created because I needed some org-babel code blocks like functionality for my LaTeX document but while being inside the LaTeX. It's just single line code/expressions with support for templates.
