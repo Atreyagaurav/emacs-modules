@@ -1,12 +1,12 @@
 
 
 ;; keywords
-;; (regexp-opt '("RUN" "REM" "ONCE" "SATISFY" "BEFORE" "UNSET" "OMIT" "FIRST" "FROM" "SATISFY"
-;; 	 "OMIT" "DATE" "SKIP" "ONCE" "AFTER" "WARN" "PRIORITY" "AT" "SCHED" "IF" "ELSE" "ENDIF"
-;; 	 "WARN" "UNTIL" "THROUGH" "SCANFROM" "DURATION" "TAG" "MSG" "MSF" "CAL" "SPECIAL" "IFTRIG"
-;; 	 "PS" "PSFILE" "BANNER" "INCLUDE" "PUSH-OMIT-CONTEXT" "DEBUG" "DUMPVARS" "PUSH" "CLEAR" "POP"
-;; 	 "CLEAR-OMIT-CONTEXT" "POP-OMIT-CONTEXT"  "SET" "ERRMSG" "FSET" "DUMP" "BAN" "INC" "SCAN"
-;; 	 "EXIT" "FLUSH" "PRESERVE" "MOON" "COLOR" "UNSET" "ADDOMIT" "OMITFUNC") t)
+(setq remind-keywords-regexp (concat "\\<" (regexp-opt '("RUN" "REM" "ONCE" "SATISFY" "BEFORE" "UNSET" "OMIT" "FIRST" "FROM" "SATISFY"
+	 "OMIT" "DATE" "SKIP" "ONCE" "AFTER" "WARN" "PRIORITY" "AT" "SCHED" "IF" "ELSE" "ENDIF"
+	 "WARN" "UNTIL" "THROUGH" "SCANFROM" "DURATION" "TAG" "MSG" "MSF" "CAL" "SPECIAL" "IFTRIG"
+	 "PS" "PSFILE" "BANNER" "INCLUDE" "PUSH-OMIT-CONTEXT" "DEBUG" "DUMPVARS" "PUSH" "CLEAR" "POP"
+	 "CLEAR-OMIT-CONTEXT" "POP-OMIT-CONTEXT"  "SET" "ERRMSG" "FSET" "DUMP" "BAN" "INC" "SCAN"
+	 "EXIT" "FLUSH" "PRESERVE" "MOON" "COLOR" "UNSET" "ADDOMIT" "OMITFUNC") t) "\\>"))
 ;; (regexp-opt '("INT" "STRING" "TIME" "DATE" "SHADE" "DATETIME") t)
 ;; (regexp-opt '("$CalcUTC" "$CalMode" "$Daemon" "$DateSep" "$DefaultPrio" "$DontFork" "$DontTrigAts" "$DontQueue"
 ;; 	 "$EndSent" "$EndSentIg" "$NumTrig" "$FirstIndent" "$FoldYear" "$FormWidth" "$HushMode"
@@ -32,23 +32,24 @@
 
 (defconst remind-font-lock-keywords-1
   (list
+   '("\\<\\(CAL\\|MS[FG]\\|PS\\(?:FILE\\)?\\|RUN\\|SPECIAL\\) \\(.*\\)\\>"
+     2 'font-lock-string-face)
+   '("\\[\\(.*\\)\\]" 1 font-lock-negation-char-face t)
    '("\\<\\(A\\(?:DDOMIT\\|FTER\\|T\\)\\|B\\(?:AN\\(?:NER\\)?\\|EFORE\\)\\|C\\(?:AL\\|LEAR\\(?:-OMIT-CONTEXT\\)?\\|OLOR\\)\\|D\\(?:ATE\\|EBUG\\|U\\(?:MP\\(?:VARS\\)?\\|RATION\\)\\)\\|E\\(?:LSE\\|NDIF\\|RRMSG\\|XIT\\)\\|F\\(?:IRST\\|LUSH\\|ROM\\|SET\\)\\|I\\(?:F\\(?:TRIG\\)?\\|NC\\(?:LUDE\\)?\\)\\|M\\(?:OON\\|S[FG]\\)\\|O\\(?:MIT\\(?:FUNC\\)?\\|NCE\\)\\|P\\(?:OP\\(?:-OMIT-CONTEXT\\)?\\|R\\(?:ESERVE\\|IORITY\\)\\|S\\(?:FILE\\)?\\|USH\\(?:-OMIT-CONTEXT\\)?\\)\\|R\\(?:EM\\|UN\\)\\|S\\(?:ATISFY\\|C\\(?:AN\\(?:FROM\\)?\\|HED\\)\\|ET\\|KIP\\|PECIAL\\)\\|T\\(?:AG\\|HROUGH\\)\\|UN\\(?:SET\\|TIL\\)\\|WARN\\)\\>"
      . font-lock-keyword-face)
    '("\\<\\(DATE\\(?:TIME\\)?\\|INT\\|S\\(?:HADE\\|TRING\\)\\|TIME\\)\\>"
      . font-lock-type-face)
    '("\\<\\(\\$\\(?:Cal\\(?:Mode\\|cUTC\\)\\|D\\(?:a\\(?:emon\\|teSep\\)\\|efaultPrio\\|ont\\(?:Fork\\|Queue\\|TrigAts\\)\\)\\|EndSent\\(?:Ig\\)?\\|F\\(?:irstIndent\\|o\\(?:ldYear\\|rmWidth\\)\\)\\|HushMode\\|I\\(?:gnoreOnce\\|nfDelta\\)\\|L\\(?:at\\(?:Deg\\|Min\\|Sec\\)\\|o\\(?:cation\\|ng\\(?:Deg\\|Min\\|Sec\\)\\)\\)\\|M\\(?:axSatIter\\|insFromUTC\\)\\|N\\(?:extMode\\|um\\(?:Queued\\|Trig\\)\\)\\|P\\(?:SCal\\|refixLineNo\\)\\|RunOff\\|S\\(?:impleCal\\|ortBy\\(?:Date\\|Prio\\)\\|ubsIndent\\)\\|T\\(?:imeSep\\|[dmwy]\\)\\|U\\(?:ntimedFirst\\|[dmwy]\\)\\|[TU]\\)\\)\\>"
-     . (0 font-lock-variable-name-face t))
+     0 font-lock-variable-name-face t)
    '("\\<\\(A\\(?:pr\\(?:il\\)?\\|ug\\(?:ust\\)?\\)\\|Dec\\(?:ember\\)?\\|F\\(?:eb\\(?:ruary\\)?\\|ri\\(?:day\\)?\\)\\|J\\(?:an\\(?:uary\\)?\\|u\\(?:ly\\|ne\\|[ln]\\)\\)\\|M\\(?:a\\(?:rch\\|[ry]\\)\\|on\\(?:day\\)?\\)\\|Nov\\(?:ember\\)?\\|Oct\\(?:ober\\)?\\|S\\(?:at\\(?:urday\\)?\\|ep\\(?:t\\(?:ember\\)?\\)?\\|un\\(?:day\\)?\\)\\|T\\(?:hu\\(?:rs\\(?:day\\)?\\)?\\|ue\\(?:s\\(?:day\\)?\\)?\\)\\|Wed\\(?:nesday\\)?\\)\\>"
-     . font-lock-constant-face)
-   '("\\<\\(CAL\\|MS[FG]\\|PS\\(?:FILE\\)?\\|RUN\\|SPECIAL\\) \\(.*\\)\\>"
-     . (2 'font-lock-string-face nil))
-   ;; '("\\<\\(a\\(?:bs\\|ccess\\|rgs\\|sc\\)\\|baseyr\\|c\\(?:h\\(?:ar\\|oose\\)\\|oerce\\|urrent\\)\\|d\\(?:a\\(?:te\\(?:part\\|time\\)?\\|wn\\|y\\(?:sinmon\\)?\\)\\|efined\\|osubst\\|usk\\)\\|e\\(?:aster\\(?:date\\)?\\|valtrig\\)\\|file\\(?:d\\(?:ate\\(?:time\\)?\\|ir\\)\\|name\\)\\|getenv\\|h\\(?:eb\\(?:da\\(?:te\\|y\\)\\|mon\\|year\\)\\|our\\)\\|i\\(?:if\\|ndex\\|s\\(?:dst\\|leap\\|omitted\\)\\)\\|l\\(?:anguage\\|ower\\)\\|m\\(?:ax\\|in\\(?:sfromutc\\|ute\\)?\\|o\\(?:n\\(?:num\\)?\\|on\\(?:\\(?:dat\\(?:etim\\)?\\|phas\\|tim\\)e\\)\\)\\|sg\\(?:\\(?:pre\\|suf\\)fix\\)\\)\\|no\\(?:nomitted\\|w\\)\\|o\\(?:rd\\|stype\\)\\|p\\(?:lural\\|s\\(?:moon\\|shade\\)\\)\\|real\\(?:current\\|now\\|today\\)\\|s\\(?:gn\\|hell\\|lide\\|trlen\\|u\\(?:bstr\\|n\\(?:rise\\|set\\)\\)\\)\\|t\\(?:hisyear\\|ime\\(?:part\\)?\\|oday\\|rig\\(?:date\\(?:time\\)?\\|ger\\|time\\|valid\\)\\|ypeof\\|zconvert\\)\\|upper\\|v\\(?:alue\\|ersion\\)\\|w\\(?:eekno\\|kday\\(?:num\\)?\\)\\|year\\)\\>"
-   ;;   . (0 font-lock-function-name-face t))
+     0 font-lock-constant-face t)
+   '("\\<\\(a\\(?:bs\\|ccess\\|rgs\\|sc\\)\\|baseyr\\|c\\(?:h\\(?:ar\\|oose\\)\\|oerce\\|urrent\\)\\|d\\(?:a\\(?:te\\(?:part\\|time\\)?\\|wn\\|y\\(?:sinmon\\)?\\)\\|efined\\|osubst\\|usk\\)\\|e\\(?:aster\\(?:date\\)?\\|valtrig\\)\\|file\\(?:d\\(?:ate\\(?:time\\)?\\|ir\\)\\|name\\)\\|getenv\\|h\\(?:eb\\(?:da\\(?:te\\|y\\)\\|mon\\|year\\)\\|our\\)\\|i\\(?:if\\|ndex\\|s\\(?:dst\\|leap\\|omitted\\)\\)\\|l\\(?:anguage\\|ower\\)\\|m\\(?:ax\\|in\\(?:sfromutc\\|ute\\)?\\|o\\(?:n\\(?:num\\)?\\|on\\(?:\\(?:dat\\(?:etim\\)?\\|phas\\|tim\\)e\\)\\)\\|sg\\(?:\\(?:pre\\|suf\\)fix\\)\\)\\|no\\(?:nomitted\\|w\\)\\|o\\(?:rd\\|stype\\)\\|p\\(?:lural\\|s\\(?:moon\\|shade\\)\\)\\|real\\(?:current\\|now\\|today\\)\\|s\\(?:gn\\|hell\\|lide\\|trlen\\|u\\(?:bstr\\|n\\(?:rise\\|set\\)\\)\\)\\|t\\(?:hisyear\\|ime\\(?:part\\)?\\|oday\\|rig\\(?:date\\(?:time\\)?\\|ger\\|time\\|valid\\)\\|ypeof\\|zconvert\\)\\|upper\\|v\\(?:alue\\|ersion\\)\\|w\\(?:eekno\\|kday\\(?:num\\)?\\)\\|year\\)\\>"
+     0 font-lock-function-name-face t)
    ;; time
-   '("\\<\\(2[0-4]\\|[01]?[0-9][.:][0-5][0-9]\\)\\(\\(A\\|P\\)M\\)?\\>" . font-lock-constant-face)
+   '("\\<\\(2[0-4]\\|[01]?[0-9][.:][0-5][0-9]\\)\\(\\(A\\|P\\)M\\)?\\>" 0 font-lock-constant-face t)
    ;; date
-   '("\\<\\([12][09][0-9][0-9][-/]\\(0[1-9]\\|1[0-2]\\)[-/]\\([12][0-9]\\|0[1-9]\\|3[01]\\)\\)\\(@\\(2[0-4]\\|[01]?[0-9][.:][0-5][0-9]\\)\\)?\\>" . font-lock-constant-face)
-   '("\\<\\([0-9]+\\)\\>" . font-lock-constant-face)
+   '("\\<\\([12][09][0-9][0-9][-/]\\(0[1-9]\\|1[0-2]\\)[-/]\\([12][0-9]\\|0[1-9]\\|3[01]\\)\\)\\(@\\(2[0-4]\\|[01]?[0-9][.:][0-5][0-9]\\)\\)?\\>" 0 font-lock-constant-face t)
+   '("\\<\\([0-9]+\\)\\>" 0 font-lock-constant-face t)
    ;; '("\\<\\(SET \\)\\([a-z_][a-z0-9_]*\\)\\>" . (2 font-lock-variable-name-face))
    )
   
