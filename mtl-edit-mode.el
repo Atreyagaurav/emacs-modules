@@ -25,6 +25,7 @@
 
 ;;; Code:
 (require 'help-macro)
+(require 'cl-lib)
 
 (setq pronouns (list
 		'("she" "her" "her" "herself")
@@ -484,17 +485,6 @@
 	    (,(kbd "v") . mtl-past-tense)
 	    )
   )
-
-(defun mtl-edit-help ()
-  (interactive)
-  (with-temp-buffer
-    (map-keymap (lambda (f)
-		  (princ (key-description (where-is-internal f mtl-edit-mode-map t)))
-		  (princ "  -> ")(princ f)(princ "\n")
-		  ;; (princ "\t(")
-		  ;; (princ (documentation f))
-		  ;; (princ ")\n")
-		  ) mtl-edit-mode-map)))
 
 
 (provide 'mtl-edit-mode)
