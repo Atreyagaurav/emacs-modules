@@ -25,7 +25,7 @@
 
 ;;; Code:
 (require 'help-macro)
-(require 'cl-lib)
+(require 'cl)
 
 (setq pronouns (list
 		'("she" "her" "her" "herself")

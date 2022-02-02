@@ -25,6 +25,7 @@
 ;; 
 
 ;;; Code:
+(require 'cl)
 
 (setq calt-subprocess-engine "python")
 (setq calt-subprocess-arg "-i")
@@ -99,6 +100,16 @@
   (insert calt-last-eval-string)
   )
 
+(defun calt-eval-and-insert-region (beg end)
+  (interactive (if (use-region-p)
+                   (list (region-beginning) (region-end))
+                 (list (point-min) (point-min))))
+  (calt-eval-region beg end)
+  (goto-char end)
+  (insert " = ")
+  (insert calt-last-eval-string)
+  )
+
 (defun calt-parse-template (string)
   (save-match-data
     ;; string-match-p shouldn't modify match data but it was being
@@ -153,11 +164,21 @@
 (defun calt-exp-to-latex (beg end)
   (interactive "r")
   (save-excursion
-    (goto-char beg)
-    (while (re-search-forward
-     "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)")
+    (goto-char end)
+    (while (re-search-backward
+     "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)" beg)
       (replace-match "\\1 \\\\times 10^{\\2}")
       )))
+
+
+(defun calt-exp-in-latex-math (beg end)
+  (interactive "r")
+  (save-excursion
+    (goto-char beg)
+    (insert "\\(")
+    (goto-char (+ (point) (- end beg)))
+    (insert "\\)")
+    ))
 
 (defun calt-format-region-last (beg end)
       (interactive (if (use-region-p)
@@ -212,18 +233,43 @@
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
+
+(defun calt-eval-elisp-and-insert ()
+  "Replace the preceding sexp with its value."
+  (interactive)
+  (backward-kill-sexp)
+  (condition-case nil
+      (insert (concat (current-kill 0)
+		     " = "
+		     (format "%s"
+			     (eval (read (current-kill 0))))))
+    (error (message "Invalid expression")
+           (insert (current-kill 0)))))
+
+
+(defun calt-xx-string (beg end)
+  (interactive "r")
+  (delete-region beg end)
+  (goto-char beg)
+  (loop repeat (- end beg) do (insert "X"))
+  )
+
+
 (setq calt-key-map (make-sparse-keymap))
 (define-key calt-key-map (kbd "p") 'calt-start-process)
 (define-key calt-key-map (kbd "q") 'calt-stop-process)
 (define-key calt-key-map (kbd "T") 'calt-eval-template)
 (define-key calt-key-map (kbd "t") 'calt-eval-and-insert-template)
-(define-key calt-key-map (kbd "r") 'calt-eval-and-replace-region)
-(define-key calt-key-map (kbd "R") 'calt-eval-regio)
+(define-key calt-key-map (kbd "R") 'calt-eval-and-replace-region)
+(define-key calt-key-map (kbd "r") 'calt-eval-and-insert-region)
 (define-key calt-key-map (kbd "F") 'calt-format-region)
 (define-key calt-key-map (kbd "f") 'calt-format-region-last)
-(define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-replace)
+(define-key calt-key-map (kbd "E") 'calt-eval-elisp-and-replace)
+(define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-insert)
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
 (define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
+(define-key calt-key-map (kbd "m") 'calt-exp-in-latex-math)
+(define-key calt-key-map (kbd "x") 'calt-xx-string)
 
 ;; things it modifies for the current mode
 
