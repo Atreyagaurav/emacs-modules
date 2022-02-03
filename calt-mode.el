@@ -162,6 +162,7 @@
   )
 
 (defun calt-exp-to-latex (beg end)
+  "Converts exponentials to latex notation."
   (interactive "r")
   (save-excursion
     (goto-char end)
@@ -172,6 +173,7 @@
 
 
 (defun calt-exp-in-latex-math (beg end)
+  "Inserts the selected expression inside latex inline math environment."
   (interactive "r")
   (save-excursion
     (goto-char beg)
@@ -179,6 +181,48 @@
     (goto-char (+ (point) (- end beg)))
     (insert "\\)")
     ))
+
+
+(defun lisp2latex (form)
+  "Converts given lisp expression to latex equivalent"
+  (pcase form
+    ;; basic operators
+    (`(+ . ,args) (mapconcat #'lisp2latex args " + "))
+    (`(* . ,args) (mapconcat #'lisp2latex args " \\times "))
+    (`(/ ,a1 . ,args)
+     (if args
+         (format "\\frac{%s}{%s}" (lisp2latex a1)
+                 (lisp2latex (cons '* args)))
+       (format "\\frac1{%s}" (lisp2latex a1))))
+    (`(- ,a1 . ,args)
+     (if args
+         (format "%s - %s" (lisp2latex a1)
+                 (mapconcat #'lisp2latex args " - "))
+       (format "- %s" (lisp2latex a1))))
+
+    ;; assignement operator
+    (`(setq . ,args)
+     ;; only works for single setq
+     (mapconcat #'lisp2latex args " = "))
+    
+    ;; other operators
+    (`(1+ ,arg) (concat (lisp2latex arg) " + 1"))
+    (_ (format "%s%s" (car form)
+	       (cdr form)
+	       ;; (mapconcat #'lisp2latex (list (cdr form)) ", ")
+	       ))))
+
+;; (lisp2latex '(+ 1 2))
+;; (lisp2latex '(lisp2latex '(+ 2 2)))
+;; (setq form '(length "22"))
+;; (lisp2latex '(length 2 3))
+
+(defun calt-sexp-to-latex-exp ()
+  (interactive)
+  (backward-kill-sexp)
+  (insert (lisp2latex (read (current-kill 0))))
+  )
+
 
 (defun calt-format-region-last (beg end)
       (interactive (if (use-region-p)
@@ -266,6 +310,7 @@
 (define-key calt-key-map (kbd "f") 'calt-format-region-last)
 (define-key calt-key-map (kbd "E") 'calt-eval-elisp-and-replace)
 (define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-insert)
+(define-key calt-key-map (kbd "s") 'calt-sexp-to-latex-exp)
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
 (define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
 (define-key calt-key-map (kbd "m") 'calt-exp-in-latex-math)
