@@ -202,20 +202,20 @@
 
     ;; assignement operator
     (`(setq . ,args)
-     ;; only works for single setq
-     (mapconcat #'lisp2latex args " = "))
+     (with-output-to-string 
+       (loop for (a b . rest) on args by #'cddr do
+             (princ (format "%s = %s" (lisp2latex a) (lisp2latex b)))
+             (when rest (princ "; ")))))
     
     ;; other operators
     (`(1+ ,arg) (concat (lisp2latex arg) " + 1"))
-    (_ (format "%s%s" (car form)
-	       (cdr form)
-	       ;; (mapconcat #'lisp2latex (list (cdr form)) ", ")
-	       ))))
 
-;; (lisp2latex '(+ 1 2))
-;; (lisp2latex '(lisp2latex '(+ 2 2)))
-;; (setq form '(length "22"))
-;; (lisp2latex '(length 2 3))
+    ;; named functions
+    (`(,func . ,args)
+     (format "\\mathrm{%s}(%s)" func (mapconcat #'lisp2latex args ",")))
+    ;; default
+    (_ (prin1-to-string form))))
+
 
 (defun calt-sexp-to-latex-exp ()
   (interactive)
@@ -279,7 +279,7 @@
 
 
 (defun calt-eval-elisp-and-insert ()
-  "Replace the preceding sexp with its value."
+  "Inserts the evaulation result of the preceding sexp."
   (interactive)
   (backward-kill-sexp)
   (condition-case nil
@@ -287,8 +287,7 @@
 		     " = "
 		     (format "%s"
 			     (eval (read (current-kill 0))))))
-    (error (message "Invalid expression")
-           (insert (current-kill 0)))))
+    (error (message "Invalid expression"))))
 
 
 (defun calt-xx-string (beg end)
