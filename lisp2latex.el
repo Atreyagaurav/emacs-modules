@@ -11,13 +11,13 @@
         (format "(%s)" latex)
       latex)))
 
-(defun lisp2latex (form)
+(defun lisp2latex-all (form)
   "Converts given lisp expression to latex equivalent"
   (pcase form
     ;; basic operators
     (`(+ . ,args)
      (setf latex-maybe-enclose t)
-     (mapconcat #'lisp2latex args " + "))
+     (mapconcat #'lisp2latex-all args " + "))
     
     (`(* . ,args)
      (setf latex-maybe-enclose t)
@@ -29,31 +29,34 @@
     
     (`(/ ,a1 . ,args)
      (if args
-         (format "\\frac{%s}{%s}" (lisp2latex a1)
-                 (lisp2latex (cons '* args)))
-       (format "\\frac1{%s}" (lisp2latex a1))))
+         (format "\\frac{%s}{%s}" (lisp2latex-all a1)
+                 (lisp2latex-all (cons '* args)))
+       (format "\\frac1{%s}" (lisp2latex-all a1))))
     
     (`(- ,a1 . ,args)
      (if args
-         (format "%s - %s" (lisp2latex a1)
-                 (mapconcat #'lisp2latex args " - "))
-       (format "- %s" (lisp2latex a1))))
+         (format "%s - %s" (lisp2latex-all a1)
+                 (mapconcat #'lisp2latex-all args " - "))
+       (format "- %s" (lisp2latex-all a1))))
 
     (`(expt ,base ,power)
      (if (listp base)
-         (format "(%s)^{%s}" (lisp2latex base) (lisp2latex power))
-       (format "%s^{%s}"  (lisp2latex base) (lisp2latex power))))
+         (format "(%s)^{%s}" (lisp2latex-all base) (lisp2latex-all power))
+       (format "%s^{%s}"  (lisp2latex-all base) (lisp2latex-all power))))
 
     ;; assignment operator
     (`(setq . ,args)
      (with-output-to-string 
        (loop for (a b . rest) on args by #'cddr do
-             (princ (format "%s = %s" (lisp2latex a) (lisp2latex b)))
+             (princ (format "%s = %s" (lisp2latex-all a) (lisp2latex-all b)))
              (when rest (princ "; ")))))
     
     ;; other operators
-    (`(1+ ,arg) (concat "1 + " (lisp2latex arg) ))
+    (`(1+ ,arg) (concat "1 + " (lisp2latex-all arg) ))
+    (`(sqrt ,arg) (format "\\sqrt{%s}" (lisp2latex-all arg)))
+
     
+    ;; named functions
     (`(,func . ,args)
      (let* ((known? (find func lisp2latex-functions))
             (enclose? (or (not known?)
@@ -61,11 +64,10 @@
                           (listp (first args))))
             (format-string (concat (if known? "\\%s" "\\mathrm{%s}")
                                    (if enclose?  "(%s)" " %s"))))
-       (format format-string func (mapconcat #'lisp2latex args ","))))
+       (format format-string func (mapconcat #'lisp2latex-all args ","))))
     
     (_ (prin1-to-string form) )))
 
-(defun lisp-to-latex ()
-  (interactive)
-  (backward-kill-sexp)
-  (insert (lisp2latex (read (current-kill 0)))))
+
+(provide 'lisp2latex)
+

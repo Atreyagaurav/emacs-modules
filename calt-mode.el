@@ -26,6 +26,7 @@
 
 ;;; Code:
 (require 'cl)
+(require 'lisp2latex)
 
 (setq calt-subprocess-engine "python")
 (setq calt-subprocess-arg "-i")
@@ -183,55 +184,39 @@
     ))
 
 
-(defun lisp2latex (form)
-  "Converts given lisp expression to latex equivalent"
-  (pcase form
-    ;; basic operators
-    (`(+ . ,args) (mapconcat #'lisp2latex args " + "))
-    (`(* . ,args) (mapconcat #'lisp2latex args " \\times "))
-    (`(/ ,a1 . ,args)
-     (if args
-         (format "\\frac{%s}{%s}" (lisp2latex a1)
-                 (lisp2latex (cons '* args)))
-       (format "\\frac1{%s}" (lisp2latex a1))))
-    (`(- ,a1 . ,args)
-     (if args
-         (format "%s - %s" (lisp2latex a1)
-                 (mapconcat #'lisp2latex args " - "))
-       (format "- %s" (lisp2latex a1))))
-
-    ;; assignement operator
-    (`(setq . ,args)
-     (with-output-to-string 
-       (loop for (a b . rest) on args by #'cddr do
-             (princ (format "%s = %s" (lisp2latex a) (lisp2latex b)))
-             (when rest (princ "; ")))))
-    
-    ;; other operators
-    (`(1+ ,arg) (concat (lisp2latex arg) " + 1"))
-
-    ;; named functions
-    (`(,func . ,args)
-     (format "\\mathrm{%s}(%s)" func (mapconcat #'lisp2latex args ",")))
-    ;; default
-    (_ (prin1-to-string form))))
-
-
 (defun calt-sexp-to-latex-exp ()
+  "Converts valid sexp to latex expressions."
   (interactive)
   (backward-kill-sexp)
-  (insert (lisp2latex (read (current-kill 0))))
+  (insert (lisp2latex-all (read (current-kill 0))))
+  )
+
+
+(defun if-symbol-to-value (symbol)
+  (if (symbolp symbol)
+      (format "%s" (eval symbol))
+    (prin1-to-string symbol)))
+
+(defun calt-sexp-replace-variables ()
+  (interactive)
+  (backward-kill-sexp)
+  (insert (let ((expression (read (current-kill 0))))
+    (pcase expression
+      (`(,func . ,args) (format "(%s %s)" func (mapconcat #'if-symbol-to-value args " ")))
+      (_ (prin1-to-string expression))
+      )))
   )
 
 
 (defun calt-format-region-last (beg end)
       (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
-                 (let ((bnd (bounds-of-thing-at-point 'symbol)))
+                 (let ((bnd (bounds-of-thing-at-point 'sexp)))
 		   (list (first bnd) (rest bnd)))))
       (let ((text (buffer-substring-no-properties beg end)))
+	;; maybe I should make it eval if given expression
       (if (string-match-p "%[0-9.]*[dfex]" calt-format-string)
-	    (setq text (string-to-number text)))
+	    (setq text (eval (read text))))
       (kill-region beg end)
       (insert (format calt-format-string text))))
 
@@ -310,6 +295,7 @@
 (define-key calt-key-map (kbd "E") 'calt-eval-elisp-and-replace)
 (define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-insert)
 (define-key calt-key-map (kbd "s") 'calt-sexp-to-latex-exp)
+(define-key calt-key-map (kbd "S") 'calt-sexp-replace-variables)
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
 (define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
 (define-key calt-key-map (kbd "m") 'calt-exp-in-latex-math)
@@ -318,16 +304,17 @@
 ;; things it modifies for the current mode
 
 (defun insert-or-replace-x (beg end)
-  "If a region is selected, replaces * by × otherwise inserts ×
-as normal. Useful in LaTeX or to convert mathmatical expression
+  "If a region is selected, replaces * by \times otherwise inserts \times
+instead of ×. Useful in LaTeX or to convert mathmatical expression
 to human redable one."
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (list (point) (point))))
+  (goto-char end)
   (if (= beg end)
-      (insert "×")
-      (when (re-search-forward "*" end)
-	(replace-match "×")
+      (insert "\\times")
+      (when (re-search-backward "*" beg)
+	(replace-match "\\\\times")
 	)))
 
 
