@@ -69,5 +69,61 @@
     (_ (prin1-to-string form) )))
 
 
+
+(defun contains-variables (expression)
+  "gives a string from expression substituting the values."
+  (if (functionp expression)
+      nil
+  (if (symbolp expression)
+	t
+      (if (consp expression)
+	  (cl-some #'contains-variables expression)
+      nil))))
+
+
+(defun substitute-values (expression)
+  "gives a string from expression substituting the values."
+  (if (functionp expression)
+      (format "%s" expression)
+    (if (symbolp expression)
+	(format "%s" (eval expression))
+      (if (consp expression)
+	  (format "(%s)"
+		  (mapconcat #'substitute-values expression " "))
+	(prin1-to-string expression)))))
+
+
+(defun solve-single-step (expression)
+  (let
+      ((form-str (prin1-to-string expression)))
+    (read
+     (replace-regexp-in-string "\\(([^(^)]+)\\)"
+			       (lambda (s) (format "%s" (eval (read s))))
+			       form-str)))
+  )
+
+
+
+(defun lisp2latex-solve-in-steps (form)
+  (let
+      ((solution (list (prin1-to-string form)))) ;given expression
+    (if
+	(contains-variables form)
+      (setq solution
+	    (append solution
+		    (list
+		     (prin1-to-string
+				  (setq form
+					(read
+					 (substitute-values form))))))))
+
+  (while (consp form)
+    (setq solution
+	  (append solution
+		  (list (prin1-to-string
+			 (setq form
+			       (solve-single-step form)))))))
+  solution))
+
 (provide 'lisp2latex)
 

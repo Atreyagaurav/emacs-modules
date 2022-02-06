@@ -192,20 +192,18 @@
   )
 
 
-(defun if-symbol-to-value (symbol)
-  (if (symbolp symbol)
-      (format "%s" (eval symbol))
-    (prin1-to-string symbol)))
-
 (defun calt-sexp-replace-variables ()
   (interactive)
   (backward-kill-sexp)
-  (insert (let ((expression (read (current-kill 0))))
-    (pcase expression
-      (`(,func . ,args) (format "(%s %s)" func (mapconcat #'if-symbol-to-value args " ")))
-      (_ (prin1-to-string expression))
-      )))
+  (insert (substitute-values (read (current-kill 0))))
   )
+
+
+(defun calt-sexp-solve-in-steps ()
+  (interactive)
+  (backward-kill-sexp)
+  (let ((expression (read (current-kill 0))))
+    (insert (s-join " = " (lisp2latex-solve-in-steps expression)))))
 
 
 (defun calt-format-region-last (beg end)
@@ -295,7 +293,7 @@
 (define-key calt-key-map (kbd "E") 'calt-eval-elisp-and-replace)
 (define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-insert)
 (define-key calt-key-map (kbd "s") 'calt-sexp-to-latex-exp)
-(define-key calt-key-map (kbd "S") 'calt-sexp-replace-variables)
+(define-key calt-key-map (kbd "S") 'calt-sexp-solve-in-steps)
 (define-key calt-key-map (kbd "+") 'calt-increment-number)
 (define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
 (define-key calt-key-map (kbd "m") 'calt-exp-in-latex-math)
