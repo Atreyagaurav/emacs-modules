@@ -25,13 +25,10 @@
 ;; 
 
 ;;; Code:
-(require 'cl)
-(require 'lisp2latex)
 
 (setq calt-subprocess-engine "python")
 (setq calt-subprocess-arg "-i")
 
-(setq calt-format-string "%.2f")
 
 (defun calt-filter-func (proc string)
   (internal-default-process-filter proc string)
@@ -122,7 +119,7 @@
 	(if
 	    (string-match-p "=" expression)
 	    (setq res (calt-eval-string ; gets the value of last assigned variable.
-		       (first (split-string expression "=")))))
+		       (cl-first (split-string expression "=")))))
 	(if (string-match-p "[0-9.]*[dfex]" fmt)
 	    (setq res (string-to-number res)) ;if the format is number
 					      ;we need to convert it.
@@ -134,7 +131,7 @@
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (let ((bnd (bounds-of-thing-at-point 'line)))
-		   (list (first bnd) (rest bnd)))))
+		   (list (cl-first bnd) (cl-rest bnd)))))
   (let ((region (buffer-substring-no-properties beg end)) newln)
     (setq newln (replace-regexp-in-string
 		 "<<\\(.*?\\);\\([0-9.a-zA-Z]+\\)?>>"
@@ -147,7 +144,7 @@
   (interactive (if (use-region-p)
                    (list (region-beginning) (region-end))
                  (let ((bnd (bounds-of-thing-at-point 'line)))
-		   (list (first bnd) (rest bnd)))))
+		   (list (cl-first bnd) (cl-rest bnd)))))
   (save-excursion
     (let ((newln (calt-eval-template beg end)) tmp)
       (when (> (length (string-trim newln)) 0)
@@ -161,116 +158,6 @@
   (interactive)
   (kill-process (concat "calt-" calt-subprocess-engine))
   )
-
-(defun calt-exp-to-latex (beg end)
-  "Converts exponentials to latex notation."
-  (interactive "r")
-  (save-excursion
-    (goto-char end)
-    (while (re-search-backward
-     "\\([0-9.+-]+\\)e\\([0-9.+-]+\\)" beg)
-      (replace-match "\\1 \\\\times 10^{\\2}")
-      )))
-
-
-(defun calt-exp-in-latex-math (beg end)
-  "Inserts the selected expression inside latex inline math environment."
-  (interactive "r")
-  (save-excursion
-    (goto-char beg)
-    (insert "\\(")
-    (goto-char (+ (point) (- end beg)))
-    (insert "\\)")
-    ))
-
-
-(defun calt-sexp-to-latex-exp ()
-  "Converts valid sexp to latex expressions."
-  (interactive)
-  (backward-kill-sexp)
-  (insert (lisp2latex-all (read (current-kill 0))))
-  )
-
-
-(defun calt-sexp-replace-variables ()
-  (interactive)
-  (backward-kill-sexp)
-  (insert (substitute-values (read (current-kill 0))))
-  )
-
-
-(defun calt-sexp-solve-in-steps ()
-  (interactive)
-  (backward-kill-sexp)
-  (let ((expression (read (current-kill 0))))
-    (insert (s-join " = " (lisp2latex-solve-in-steps expression)))))
-
-
-(defun calt-format-region-last (beg end)
-      (interactive (if (use-region-p)
-                   (list (region-beginning) (region-end))
-                 (let ((bnd (bounds-of-thing-at-point 'sexp)))
-		   (list (first bnd) (rest bnd)))))
-      (let ((text (buffer-substring-no-properties beg end)))
-	;; maybe I should make it eval if given expression
-      (if (string-match-p "%[0-9.]*[dfex]" calt-format-string)
-	    (setq text (eval (read text))))
-      (kill-region beg end)
-      (insert (format calt-format-string text))))
-
-(defun calt-format-region (beg end)
-    (interactive (if (use-region-p)
-                   (list (region-beginning) (region-end))
-                 (let ((bnd (bounds-of-thing-at-point 'symbol)))
-		   (list (first bnd) (rest bnd)))))
-    (let ((fmt  (read-string "Enter format string:"
-			     calt-format-string)))
-      (setq calt-format-string fmt)
-      (calt-format-region-last beg end)))
-
-(defun calt-increment-number (step)
-  (interactive "P")
-  (let* ((bounds (if (use-region-p)
-                     (cons (region-beginning) (region-end))
-                   (bounds-of-thing-at-point 'symbol)))
-         (word (buffer-substring-no-properties
-		(car bounds)
-		(cdr bounds)))
-	 (step (or step 1)))
-    (when bounds
-      (let ((ma (string-match
-		 "\\(.*[^0-9]\\)\\([0-9]+\\)\\([/_.,-\"']\\)?"
-		 word)))
-	(when ma
-	  (delete-region (car bounds) (cdr bounds))
-	  (insert (concat
-		   (match-string 1 word)
-		   (number-to-string (+ step (string-to-number
-					      (match-string 2 word))))
-		   (match-string 3 word))
-		  ))))))
-
-(defun calt-eval-elisp-and-replace ()
-  "Replace the preceding sexp with its value."
-  (interactive)
-  (backward-kill-sexp)
-  (condition-case nil
-      (prin1 (eval (read (current-kill 0)))
-             (current-buffer))
-    (error (message "Invalid expression")
-           (insert (current-kill 0)))))
-
-
-(defun calt-eval-elisp-and-insert ()
-  "Inserts the evaulation result of the preceding sexp."
-  (interactive)
-  (backward-kill-sexp)
-  (condition-case nil
-      (insert (concat (current-kill 0)
-		     " = "
-		     (format "%s"
-			     (eval (read (current-kill 0))))))
-    (error (message "Invalid expression"))))
 
 
 (defun calt-xx-string (beg end)
@@ -288,35 +175,9 @@
 (define-key calt-key-map (kbd "t") 'calt-eval-and-insert-template)
 (define-key calt-key-map (kbd "R") 'calt-eval-and-replace-region)
 (define-key calt-key-map (kbd "r") 'calt-eval-and-insert-region)
-(define-key calt-key-map (kbd "F") 'calt-format-region)
-(define-key calt-key-map (kbd "f") 'calt-format-region-last)
-(define-key calt-key-map (kbd "E") 'calt-eval-elisp-and-replace)
-(define-key calt-key-map (kbd "e") 'calt-eval-elisp-and-insert)
-(define-key calt-key-map (kbd "s") 'calt-sexp-to-latex-exp)
-(define-key calt-key-map (kbd "S") 'calt-sexp-solve-in-steps)
-(define-key calt-key-map (kbd "+") 'calt-increment-number)
-(define-key calt-key-map (kbd "l") 'calt-exp-to-latex)
-(define-key calt-key-map (kbd "m") 'calt-exp-in-latex-math)
 (define-key calt-key-map (kbd "x") 'calt-xx-string)
 
 ;; things it modifies for the current mode
-
-(defun insert-or-replace-x (beg end)
-  "If a region is selected, replaces * by \times otherwise inserts \times
-instead of ×. Useful in LaTeX or to convert mathmatical expression
-to human redable one."
-  (interactive (if (use-region-p)
-                   (list (region-beginning) (region-end))
-                 (list (point) (point))))
-  (goto-char end)
-  (if (= beg end)
-      (insert "\\times")
-      (when (re-search-backward "*" beg)
-	(replace-match "\\\\times")
-	)))
-
-
-(local-set-key "×" 'insert-or-replace-x)
 
 
 (define-minor-mode calt-mode
