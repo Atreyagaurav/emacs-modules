@@ -121,6 +121,10 @@ After evaluating all expressions, we can get the values, while we can also conve
 
 So not only can it convert lisp expressions to latex, it can also, give intermediate solution steps. Perfect for doing homeworks (as that's what I made it for) :P
 
+Improvement over Calt-mode:
+
+[[./images/litex.png]]
+
 * Configuration
     Clone the repo into your machine and add the path to ~load-path~, or just load the individual module you want to add.
 
