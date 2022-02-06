@@ -74,7 +74,7 @@ Here is a demo video, (please forgive me for tying to type without disabling the
    This is useful for emacs users because emacs allows lisp code to be directly evaluated inside any buffer, which means no need to have any code blocks. But since lisp expressions aren't popular we can't expect to put them in reports, so to overcome that I wrote this mode with the help of my friend [[https://gist.github.com/bpanthi977][Bibek Panthi]].
 
    Suppose we have this in a text file, we have all the variables and the formula as lisp expressions.
-#+begin_verse
+#+begin_example
    Net radiation, (setq R_n 185) W/m²
    Temperature, (setq T 28.5) °C
    Relative Humidity, (setq Rh .55)
@@ -94,10 +94,10 @@ Here is a demo video, (please forgive me for tying to type without disabling the
 
    Assume, (setq H_s 0 G 0)
    (setq E_r (/ (- R_n H_s G) l_v ρ_w))
-#+end_verse
+#+end_example
 
 After evaluating all expressions, we can get the values, while we can also convert them to latex format like this:
-#+begin_verse
+#+begin_example
    Net radiation, R_n = 185 W/m²
    Temperature, T = 28.5 °C
    Relative Humidity, Rh = 0.55
@@ -117,7 +117,7 @@ After evaluating all expressions, we can get the values, while we can also conve
 
    Assume, H_s = 0; G = 0
    E_r = \frac{R_n - H_s - G}{l_v ρ_w } = \frac{185 - 0 - 0}{2432.740 \times 996.400 } = \frac{185}{2432.740 \times 996.400 } = 7.63 \times 10^{-05}
-#+end_verse
+#+end_example
 
 So not only can it convert lisp expressions to latex, it can also, give intermediate solution steps. Perfect for doing homeworks (as that's what I made it for) :P
 
