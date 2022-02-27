@@ -188,4 +188,3 @@
 
 (provide 'calt-mode)
 ;;; calt-mode.el ends here
-

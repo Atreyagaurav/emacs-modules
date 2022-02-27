@@ -16,9 +16,9 @@ These are my personal collection of emacs modes and modules I have written with 
 
 ** MTL-Edit mode
 
-Here is a demo video, (please forgive me for tying to type without disabling the mtl-mode).
+Here is a demo video. It shows mainly the features of mtl mode but does a bit of other scripts in the beginning and the end. The linked timestamp is or mtl mode.
 
-[https://youtu.be/DJUTfHWyfew]
+[https://youtu.be/plr_tdNSdtM?t=317]
 
 ** Remind mode
    This is to edit remind files, there isn't much here except for basic syntax highlighting to differentiate the keywords and comments and such.
@@ -69,6 +69,8 @@ Here is a demo video, (please forgive me for tying to type without disabling the
 #+end_src
 
 ** LiTeX mode
+   Moved to: [https://github.com/Atreyagaurav/litex-mode]. Now available in melpa. 
+   
    This is a minor mode to convert valid elisp/lisp expressions to latex.
 
    This is useful for emacs users because emacs allows lisp code to be directly evaluated inside any buffer, which means no need to have any code blocks. But since lisp expressions aren't popular we can't expect to put them in reports, so to overcome that I wrote this mode with the help of my friend [[https://gist.github.com/bpanthi977][Bibek Panthi]].
